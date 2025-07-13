@@ -71,7 +71,7 @@ if selected_company in company_map:
                 if links:
                     st.markdown(f"### {title}")
                     for text, url in links:
-                        st.markdown(f"🔗 [{text}]({url})")
+                        st.markdown(f"- 🔗 [{text}]({url})")
 
             render_section("📄 Annual Reports", ar_links[:5])
             render_section("🗣️ Earnings Call Transcripts", call_links[:5])
