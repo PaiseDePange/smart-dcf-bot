@@ -3,17 +3,34 @@ import yfinance as yf
 import numpy as np
 
 st.set_page_config(page_title="Smart DCF Valuation Bot", layout="centered")
-
 st.title("📊 Smart DCF Valuation Bot")
-st.markdown("Enter a stock symbol and your DCF assumptions to calculate fair value.")
+st.markdown("Select a stock from the NSE 500 list and enter your DCF assumptions.")
 
-# User Inputs
-ticker = st.text_input("Stock Symbol (e.g., TCS.NS for India, AAPL for US)", "TCS.NS")
+# Sample NSE 500 dropdown list (extend this to full 500)
+nse_500_list = [
+    {"label": "Tata Consultancy Services (TCS.NS)", "ticker": "TCS.NS"},
+    {"label": "Infosys Ltd (INFY.NS)", "ticker": "INFY.NS"},
+    {"label": "Reliance Industries (RELIANCE.NS)", "ticker": "RELIANCE.NS"},
+    {"label": "HDFC Bank Ltd (HDFCBANK.NS)", "ticker": "HDFCBANK.NS"},
+    {"label": "ICICI Bank Ltd (ICICIBANK.NS)", "ticker": "ICICIBANK.NS"},
+    {"label": "ITC Ltd (ITC.NS)", "ticker": "ITC.NS"},
+    {"label": "Larsen & Toubro (LT.NS)", "ticker": "LT.NS"},
+    {"label": "Axis Bank Ltd (AXISBANK.NS)", "ticker": "AXISBANK.NS"},
+    {"label": "State Bank of India (SBIN.NS)", "ticker": "SBIN.NS"},
+    {"label": "Hindustan Unilever (HINDUNILVR.NS)", "ticker": "HINDUNILVR.NS"},
+]
+
+# Dropdown UI
+selected_label = st.selectbox("Select a company:", options=[x["label"] for x in nse_500_list])
+ticker = next(x["ticker"] for x in nse_500_list if x["label"] == selected_label)
+
+# Assumptions input
 growth_rate = st.number_input("Expected Annual FCF Growth Rate (%)", value=10.0) / 100
 discount_rate = st.number_input("Discount Rate / WACC (%)", value=9.0) / 100
 terminal_growth_rate = st.number_input("Terminal Growth Rate (%)", value=3.0) / 100
 years = st.slider("Projection Years", 3, 10, 5)
 
+# Run DCF
 if st.button("Calculate DCF"):
     try:
         stock = yf.Ticker(ticker)
@@ -44,4 +61,3 @@ if st.button("Calculate DCF"):
 
     except Exception as e:
         st.error(f"❌ Error occurred: {str(e)}")
-
