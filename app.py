@@ -45,7 +45,7 @@ if selected_company in company_map:
                 href = link["href"]
                 full_url = f"https://www.screener.in{href}" if href.startswith("/") else href
 
-                if not href.endswith(".pdf"):
+                if ".pdf" not in href.lower():
                     continue  # Skip non-PDF or dynamic links
 
                 if "annual report" in text:
