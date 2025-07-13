@@ -36,7 +36,7 @@ if st.button("🔍 Fetch Filings"):
             doc_section = soup.find("section", {"id": "documents"})
             if doc_section:
                 all_text = doc_section.get_text(separator="\n")
-                pdf_urls = re.findall(r"https://[^\s'"]+\.pdf", all_text)
+                pdf_urls = re.findall(r"https://[^\s\'\"]+\.pdf", all_text)
 
                 ar_links = []
                 call_links = []
