@@ -1,4 +1,4 @@
-# 📥 Streamlit App to Fetch Company Filings (Using Screener.in)
+# 📅 Streamlit App to Fetch Company Filings (Using Screener.in)
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
@@ -35,8 +35,15 @@ if st.button("🔍 Fetch Filings"):
 
             doc_section = soup.find("section", {"id": "documents"})
             if doc_section:
-                all_text = doc_section.get_text(separator="\n")
-                pdf_urls = re.findall(r"https://[^\s\'\"]+\.pdf", all_text)
+                pdf_urls = []
+                for a in doc_section.find_all("a", href=True):
+                    href = a["href"]
+                    if href.endswith(".pdf"):
+                        if href.startswith("http"):
+                            pdf_urls.append((a.text.strip() or href.split("/")[-1], href))
+                        else:
+                            full_url = f"https://www.screener.in{href}"
+                            pdf_urls.append((a.text.strip() or href.split("/")[-1], full_url))
 
                 ar_links = []
                 call_links = []
@@ -44,9 +51,7 @@ if st.button("🔍 Fetch Filings"):
                 qr_links = []
                 other_links = []
 
-                for url in pdf_urls:
-                    fallback_text = url.split("/")[-1]
-                    text = fallback_text.replace("%20", " ")
+                for text, url in pdf_urls:
                     text_lower = text.lower()
 
                     if "annual" in text_lower and "report" in text_lower:
@@ -69,8 +74,8 @@ if st.button("🔍 Fetch Filings"):
                 render_section("📄 Annual Reports", ar_links[:5])
                 render_section("🗣️ Earnings Call Transcripts", call_links[:5])
                 render_section("🖼️ Investor Presentations", pres_links[:5])
-                render_section("📊 Quarterly Financial Results", qr_links[:5])
-                render_section("📎 Other Documents", other_links[:10])
+                render_section("📈 Quarterly Financial Results", qr_links[:5])
+                render_section("📌 Other Documents", other_links[:10])
 
             else:
                 st.warning("⚠️ Could not find documents section on Screener.in.")
