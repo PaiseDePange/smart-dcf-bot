@@ -1,4 +1,4 @@
-# 📅 Streamlit App to Fetch Company Filings (Using Screener.in)
+# 🗕️ Streamlit App to Fetch Company Filings (Using Screener.in)
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
@@ -35,15 +35,9 @@ if st.button("🔍 Fetch Filings"):
 
             doc_section = soup.find("section", {"id": "documents"})
             if doc_section:
-                pdf_urls = []
-                for a in doc_section.find_all("a", href=True):
-                    href = a["href"]
-                    if href.endswith(".pdf"):
-                        if href.startswith("http"):
-                            pdf_urls.append((a.text.strip() or href.split("/")[-1], href))
-                        else:
-                            full_url = f"https://www.screener.in{href}"
-                            pdf_urls.append((a.text.strip() or href.split("/")[-1], full_url))
+                all_text = doc_section.get_text(" ", strip=True)
+                matches = re.findall(r"https://[^\s]+?\.pdf", all_text)
+                pdf_urls = [(url.split("/")[-1], url) for url in matches]
 
                 ar_links = []
                 call_links = []
@@ -72,7 +66,7 @@ if st.button("🔍 Fetch Filings"):
                             st.markdown(f"- 🔗 [{text}]({url})")
 
                 render_section("📄 Annual Reports", ar_links[:5])
-                render_section("🗣️ Earnings Call Transcripts", call_links[:5])
+                render_section("🔣 Earnings Call Transcripts", call_links[:5])
                 render_section("🖼️ Investor Presentations", pres_links[:5])
                 render_section("📈 Quarterly Financial Results", qr_links[:5])
                 render_section("📌 Other Documents", other_links[:10])
