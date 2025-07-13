@@ -47,9 +47,8 @@ if selected_company in company_map:
                 full_url = f"https://www.screener.in{href}" if href.startswith("/") else href
 
                 if ".pdf" not in href.lower():
-                    continue  # Skip non-PDF or dynamic links
+                    continue
 
-                # If text is empty or too short, use filename as fallback
                 if not raw_text or len(raw_text) < 4:
                     fallback_text = full_url.split("/")[-1].split("?")[0]
                     text = fallback_text
@@ -68,26 +67,17 @@ if selected_company in company_map:
                 else:
                     other_links.append((text, full_url))
 
-            st.markdown("### 📄 Annual Reports")
-            for text, url in ar_links[:2]:
-                st.markdown(f"- [{text}]({url})")
+            def render_section(title, links):
+                if links:
+                    st.markdown(f"### {title}")
+                    for text, url in links:
+                        st.markdown(f"🔗 [{text}]({url})")
 
-            st.markdown("### 🗣️ Earnings Call Transcripts")
-            for text, url in call_links[:4]:
-                st.markdown(f"- [{text}]({url})")
-
-            st.markdown("### 🖼️ Investor Presentations")
-            for text, url in pres_links[:4]:
-                st.markdown(f"- [{text}]({url})")
-
-            st.markdown("### 📊 Quarterly Financial Results")
-            for text, url in qr_links[:4]:
-                st.markdown(f"- [{text}]({url})")
-
-            if other_links:
-                st.markdown("### 📎 Other Documents")
-                for text, url in other_links:
-                    st.markdown(f"- [{text}]({url})")
+            render_section("📄 Annual Reports", ar_links[:5])
+            render_section("🗣️ Earnings Call Transcripts", call_links[:5])
+            render_section("🖼️ Investor Presentations", pres_links[:5])
+            render_section("📊 Quarterly Financial Results", qr_links[:5])
+            render_section("📎 Other Documents", other_links[:10])
 
         else:
             st.warning("⚠️ Could not find documents section on Screener.in.")
