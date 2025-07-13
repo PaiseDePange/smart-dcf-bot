@@ -1,65 +1,71 @@
+# 📥 Streamlit App to Fetch Company Filings
 import streamlit as st
-import yfinance as yf
-import numpy as np
+import requests
+from bs4 import BeautifulSoup
 
-st.set_page_config(page_title="Smart DCF Valuation Bot", layout="centered")
-st.title("📊 Smart DCF Valuation Bot")
-st.markdown("Select a stock from the NSE 500 list and enter your DCF assumptions.")
+st.set_page_config(page_title="Company Filings Fetcher", layout="centered")
+st.title("📂 Company Filings Dashboard")
+st.markdown("Enter an Indian listed company name (e.g. TCS) to fetch its recent filings:")
 
-# Sample NSE 500 dropdown list (extend this to full 500)
-nse_500_list = [
-    {"label": "Tata Consultancy Services (TCS.NS)", "ticker": "TCS.NS"},
-    {"label": "Infosys Ltd (INFY.NS)", "ticker": "INFY.NS"},
-    {"label": "Reliance Industries (RELIANCE.NS)", "ticker": "RELIANCE.NS"},
-    {"label": "HDFC Bank Ltd (HDFCBANK.NS)", "ticker": "HDFCBANK.NS"},
-    {"label": "ICICI Bank Ltd (ICICIBANK.NS)", "ticker": "ICICIBANK.NS"},
-    {"label": "ITC Ltd (ITC.NS)", "ticker": "ITC.NS"},
-    {"label": "Larsen & Toubro (LT.NS)", "ticker": "LT.NS"},
-    {"label": "Axis Bank Ltd (AXISBANK.NS)", "ticker": "AXISBANK.NS"},
-    {"label": "State Bank of India (SBIN.NS)", "ticker": "SBIN.NS"},
-    {"label": "Hindustan Unilever (HINDUNILVR.NS)", "ticker": "HINDUNILVR.NS"},
-]
+company_input = st.text_input("Company Name (e.g. TCS, INFY, HDFC Bank)", "TCS")
 
-# Dropdown UI
-selected_label = st.selectbox("Select a company:", options=[x["label"] for x in nse_500_list])
-ticker = next(x["ticker"] for x in nse_500_list if x["label"] == selected_label)
+# Map known company short names to BSE codes (expandable dictionary)
+company_map = {
+    "TCS": {"bse_code": "532540", "name": "Tata Consultancy Services"},
+    "INFY": {"bse_code": "500209", "name": "Infosys Ltd"},
+    "RELIANCE": {"bse_code": "500325", "name": "Reliance Industries"},
+    "HDFCBANK": {"bse_code": "500180", "name": "HDFC Bank"},
+    "ITC": {"bse_code": "500875", "name": "ITC Ltd"},
+}
 
-# Assumptions input
-growth_rate = st.number_input("Expected Annual FCF Growth Rate (%)", value=10.0) / 100
-discount_rate = st.number_input("Discount Rate / WACC (%)", value=9.0) / 100
-terminal_growth_rate = st.number_input("Terminal Growth Rate (%)", value=3.0) / 100
-years = st.slider("Projection Years", 3, 10, 5)
+if company_input.upper() in company_map:
+    bse_code = company_map[company_input.upper()]["bse_code"]
+    company_display = company_map[company_input.upper()]["name"]
+    st.subheader(f"📁 Latest Filings for {company_display}")
 
-# Run DCF
-if st.button("Calculate DCF"):
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        current_price = info.get("currentPrice", None)
-        net_income = info.get("netIncomeToCommon", None)
-        shares_outstanding = info.get("sharesOutstanding", None)
+    # BSE Announcement page
+    bse_url = f"https://www.bseindia.com/corporates/ann.aspx?scrip={bse_code}&dur=A"
+    response = requests.get(bse_url, headers={"User-Agent": "Mozilla/5.0"})
 
-        if not all([current_price, net_income, shares_outstanding]):
-            st.error("❌ Could not fetch sufficient data for this stock.")
-        else:
-            fcf_base = net_income * 0.8
-            fcf_projections = [fcf_base * ((1 + growth_rate) ** year) for year in range(1, years + 1)]
-            terminal_value = fcf_projections[-1] * (1 + terminal_growth_rate) / (discount_rate - terminal_growth_rate)
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, "html.parser")
+        links = soup.find_all('a', href=True)
 
-            discounted_fcf = [fcf / ((1 + discount_rate) ** i) for i, fcf in enumerate(fcf_projections, 1)]
-            discounted_terminal_value = terminal_value / ((1 + discount_rate) ** years)
-            dcf_value = sum(discounted_fcf) + discounted_terminal_value
-            fair_value = dcf_value / shares_outstanding
+        ar_links = []
+        call_links = []
+        pres_links = []
+        qr_links = []
 
-            upside = ((fair_value - current_price) / current_price) * 100
-            verdict = "🟢 Undervalued" if upside > 0 else "🔴 Overvalued"
+        for link in links:
+            text = link.text.strip().lower()
+            href = link['href']
+            if 'annual report' in text and href.endswith(".pdf"):
+                ar_links.append("https://www.bseindia.com" + href)
+            elif 'earning call' in text or 'conference call' in text:
+                call_links.append("https://www.bseindia.com" + href)
+            elif 'investor presentation' in text:
+                pres_links.append("https://www.bseindia.com" + href)
+            elif 'financial result' in text:
+                qr_links.append("https://www.bseindia.com" + href)
 
-            st.success("✅ DCF Valuation Complete!")
-            st.metric("Current Price (INR)", f"₹{current_price:.2f}")
-            st.metric("Fair Value (INR)", f"₹{fair_value:.2f}")
-            st.metric("Upside Potential", f"{upside:.2f}% {verdict}")
+        st.markdown("### 📄 Annual Reports")
+        for url in ar_links[:2]:
+            st.markdown(f"- [Download]({url})")
 
-    except Exception as e:
-        st.error(f"❌ Error occurred: {str(e)}")
+        st.markdown("### 🗣️ Earnings Call Transcripts")
+        for url in call_links[:4]:
+            st.markdown(f"- [Download]({url})")
 
-# Minor change to trigger redeploy
+        st.markdown("### 🖼️ Investor Presentations")
+        for url in pres_links[:4]:
+            st.markdown(f"- [Download]({url})")
+
+        st.markdown("### 📊 Quarterly Financial Results")
+        for url in qr_links[:4]:
+            st.markdown(f"- [Download]({url})")
+
+    else:
+        st.error("❌ Could not fetch data from BSE site. Try again later or check the company code.")
+
+else:
+    st.warning("⚠️ Company not recognized. Please try TCS, INFY, RELIANCE, HDFCBANK, or ITC for now.")
