@@ -1,4 +1,4 @@
-# 🗕️ Streamlit App to Fetch Company Filings (Using Screener.in)
+# 🔕️ Streamlit App to Fetch Company Filings (Using Screener.in)
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
@@ -35,9 +35,12 @@ if st.button("🔍 Fetch Filings"):
 
             doc_section = soup.find("section", {"id": "documents"})
             if doc_section:
-                all_text = doc_section.get_text(" ", strip=True)
-                matches = re.findall(r"https://[^\s]+?\.pdf", all_text)
-                pdf_urls = [(url.split("/")[-1], url) for url in matches]
+                pdf_urls = []
+                for a in doc_section.find_all("a", href=True):
+                    href = a["href"]
+                    if href.endswith(".pdf") and href.startswith("http"):
+                        link_text = a.get_text(strip=True)
+                        pdf_urls.append((link_text if link_text else href.split("/")[-1], href))
 
                 ar_links = []
                 call_links = []
