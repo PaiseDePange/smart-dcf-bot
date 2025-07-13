@@ -5,9 +5,7 @@ from bs4 import BeautifulSoup
 
 st.set_page_config(page_title="Company Filings Fetcher", layout="centered")
 st.title("📂 Company Filings Dashboard")
-st.markdown("Enter an Indian listed company name (e.g. TCS) to fetch its filings from Screener.in:")
-
-company_input = st.text_input("Company Name (e.g. TCS, INFY, HDFCBANK)", "TCS")
+st.markdown("Select an Indian listed company to fetch its filings from Screener.in:")
 
 # Map known short names to Screener URLs (expandable dictionary)
 company_map = {
@@ -18,9 +16,12 @@ company_map = {
     "ITC": {"symbol": "ITC", "name": "ITC Ltd"},
 }
 
-if company_input.upper() in company_map:
-    symbol = company_map[company_input.upper()]["symbol"]
-    company_display = company_map[company_input.upper()]["name"]
+company_options = list(company_map.keys())
+selected_company = st.selectbox("Choose a company:", company_options, index=0)
+
+if selected_company in company_map:
+    symbol = company_map[selected_company]["symbol"]
+    company_display = company_map[selected_company]["name"]
     st.subheader(f"📁 Latest Documents from Screener.in for {company_display}")
 
     screener_url = f"https://www.screener.in/company/{symbol}/consolidated/"
@@ -43,6 +44,9 @@ if company_input.upper() in company_map:
                 text = link.text.strip().lower()
                 href = link["href"]
                 full_url = f"https://www.screener.in{href}" if href.startswith("/") else href
+
+                if not href.endswith(".pdf"):
+                    continue  # Skip non-PDF or dynamic links
 
                 if "annual report" in text:
                     ar_links.append((text, full_url))
@@ -76,4 +80,4 @@ if company_input.upper() in company_map:
         st.error(f"❌ Failed to fetch data from Screener.in: {str(e)}")
 
 else:
-    st.warning("⚠️ Company not recognized. Please try TCS, INFY, RELIANCE, HDFCBANK, or ITC for now.")
+    st.warning("⚠️ Company not recognized. Please try a supported company.")
