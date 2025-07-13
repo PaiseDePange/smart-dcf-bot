@@ -39,6 +39,7 @@ if selected_company in company_map:
             call_links = []
             pres_links = []
             qr_links = []
+            other_links = []
 
             for link in links:
                 raw_text = link.text.strip()
@@ -56,14 +57,16 @@ if selected_company in company_map:
                     text = raw_text
 
                 text_lower = text.lower()
-                if "annual report" in text_lower:
+                if "annual" in text_lower and "report" in text_lower:
                     ar_links.append((text, full_url))
-                elif "conference call" in text_lower or "earnings call" in text_lower:
+                elif "call" in text_lower or "conference" in text_lower:
                     call_links.append((text, full_url))
-                elif "investor presentation" in text_lower:
+                elif "presentation" in text_lower:
                     pres_links.append((text, full_url))
                 elif "result" in text_lower:
                     qr_links.append((text, full_url))
+                else:
+                    other_links.append((text, full_url))
 
             st.markdown("### 📄 Annual Reports")
             for text, url in ar_links[:2]:
@@ -80,6 +83,11 @@ if selected_company in company_map:
             st.markdown("### 📊 Quarterly Financial Results")
             for text, url in qr_links[:4]:
                 st.markdown(f"- [{text}]({url})")
+
+            if other_links:
+                st.markdown("### 📎 Other Documents")
+                for text, url in other_links:
+                    st.markdown(f"- [{text}]({url})")
 
         else:
             st.warning("⚠️ Could not find documents section on Screener.in.")
