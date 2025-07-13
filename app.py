@@ -33,49 +33,42 @@ if st.button("🔍 Fetch Filings"):
             response = requests.get(screener_url, headers=headers)
             soup = BeautifulSoup(response.content, "html.parser")
 
-            doc_section = soup.find("section", {"id": "documents"})
-            if doc_section:
-                pdf_urls = []
-                for a_tag in doc_section.find_all("a", href=True):
-                    href = a_tag['href']
-                    text = a_tag.get_text(strip=True)
-                    if href.startswith("https") and ".pdf" in href:
-                        pdf_urls.append((text, href))
+            all_text = soup.get_text()
+            all_links = re.findall(r"https://[^\s"']+\.pdf", all_text)
 
-                ar_links = []
-                call_links = []
-                pres_links = []
-                qr_links = []
-                other_links = []
+            pdf_urls = [(url.split("/")[-1], url) for url in all_links]
 
-                for text, url in pdf_urls:
-                    text_lower = text.lower()
+            ar_links = []
+            call_links = []
+            pres_links = []
+            qr_links = []
+            other_links = []
 
-                    if "annual" in text_lower and "report" in text_lower:
-                        ar_links.append((text, url))
-                    elif "call" in text_lower or "conference" in text_lower:
-                        call_links.append((text, url))
-                    elif "presentation" in text_lower:
-                        pres_links.append((text, url))
-                    elif "result" in text_lower:
-                        qr_links.append((text, url))
-                    else:
-                        other_links.append((text, url))
+            for text, url in pdf_urls:
+                text_lower = text.lower()
 
-                def render_section(title, links):
-                    if links:
-                        st.markdown(f"### {title}")
-                        for text, url in links:
-                            st.markdown(f"- 🔗 [{text}]({url})")
+                if "annual" in text_lower and "report" in text_lower:
+                    ar_links.append((text, url))
+                elif "call" in text_lower or "conference" in text_lower:
+                    call_links.append((text, url))
+                elif "presentation" in text_lower:
+                    pres_links.append((text, url))
+                elif "result" in text_lower:
+                    qr_links.append((text, url))
+                else:
+                    other_links.append((text, url))
 
-                render_section("📄 Annual Reports", ar_links[:5])
-                render_section("🔣 Earnings Call Transcripts", call_links[:5])
-                render_section("🖼️ Investor Presentations", pres_links[:5])
-                render_section("📈 Quarterly Financial Results", qr_links[:5])
-                render_section("📌 Other Documents", other_links[:10])
+            def render_section(title, links):
+                if links:
+                    st.markdown(f"### {title}")
+                    for text, url in links:
+                        st.markdown(f"- 🔗 [{text}]({url})")
 
-            else:
-                st.warning("⚠️ Could not find documents section on Screener.in.")
+            render_section("📄 Annual Reports", ar_links[:5])
+            render_section("🔣 Earnings Call Transcripts", call_links[:5])
+            render_section("🖼️ Investor Presentations", pres_links[:5])
+            render_section("📈 Quarterly Financial Results", qr_links[:5])
+            render_section("📌 Other Documents", other_links[:10])
 
         except Exception as e:
             st.error(f"❌ Failed to fetch data from Screener.in: {str(e)}")
