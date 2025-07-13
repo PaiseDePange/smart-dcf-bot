@@ -61,3 +61,5 @@ if st.button("Calculate DCF"):
 
     except Exception as e:
         st.error(f"❌ Error occurred: {str(e)}")
+
+# Minor change to trigger redeploy
