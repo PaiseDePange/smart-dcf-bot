@@ -41,37 +41,45 @@ if selected_company in company_map:
             qr_links = []
 
             for link in links:
-                text = link.text.strip().lower()
+                raw_text = link.text.strip()
                 href = link["href"]
                 full_url = f"https://www.screener.in{href}" if href.startswith("/") else href
 
                 if ".pdf" not in href.lower():
                     continue  # Skip non-PDF or dynamic links
 
-                if "annual report" in text:
+                # If text is empty or too short, use filename as fallback
+                if not raw_text or len(raw_text) < 4:
+                    fallback_text = full_url.split("/")[-1].split("?")[0]
+                    text = fallback_text
+                else:
+                    text = raw_text
+
+                text_lower = text.lower()
+                if "annual report" in text_lower:
                     ar_links.append((text, full_url))
-                elif "conference call" in text or "earnings call" in text:
+                elif "conference call" in text_lower or "earnings call" in text_lower:
                     call_links.append((text, full_url))
-                elif "investor presentation" in text:
+                elif "investor presentation" in text_lower:
                     pres_links.append((text, full_url))
-                elif "result" in text:
+                elif "result" in text_lower:
                     qr_links.append((text, full_url))
 
             st.markdown("### 📄 Annual Reports")
             for text, url in ar_links[:2]:
-                st.markdown(f"- [{text.title()}]({url})")
+                st.markdown(f"- [{text}]({url})")
 
             st.markdown("### 🗣️ Earnings Call Transcripts")
             for text, url in call_links[:4]:
-                st.markdown(f"- [{text.title()}]({url})")
+                st.markdown(f"- [{text}]({url})")
 
             st.markdown("### 🖼️ Investor Presentations")
             for text, url in pres_links[:4]:
-                st.markdown(f"- [{text.title()}]({url})")
+                st.markdown(f"- [{text}]({url})")
 
             st.markdown("### 📊 Quarterly Financial Results")
             for text, url in qr_links[:4]:
-                st.markdown(f"- [{text.title()}]({url})")
+                st.markdown(f"- [{text}]({url})")
 
         else:
             st.warning("⚠️ Could not find documents section on Screener.in.")
