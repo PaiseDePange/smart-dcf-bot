@@ -2,6 +2,7 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+import re
 
 st.set_page_config(page_title="Company Filings Fetcher", layout="centered")
 st.title("📂 Company Filings Dashboard")
@@ -33,7 +34,8 @@ if selected_company in company_map:
 
         doc_section = soup.find("section", {"id": "documents"})
         if doc_section:
-            links = doc_section.find_all("a", href=True)
+            all_text = doc_section.get_text(separator="\n")
+            pdf_urls = re.findall(r"https://[^\s'"]+?\.pdf", all_text)
 
             ar_links = []
             call_links = []
@@ -41,31 +43,21 @@ if selected_company in company_map:
             qr_links = []
             other_links = []
 
-            for link in links:
-                raw_text = link.text.strip()
-                href = link["href"]
-                full_url = f"https://www.screener.in{href}" if href.startswith("/") else href
-
-                if ".pdf" not in href.lower():
-                    continue
-
-                if not raw_text or len(raw_text) < 4:
-                    fallback_text = full_url.split("/")[-1].split("?")[0]
-                    text = fallback_text
-                else:
-                    text = raw_text
-
+            for url in pdf_urls:
+                fallback_text = url.split("/")[-1]
+                text = fallback_text.replace("%20", " ")
                 text_lower = text.lower()
+
                 if "annual" in text_lower and "report" in text_lower:
-                    ar_links.append((text, full_url))
+                    ar_links.append((text, url))
                 elif "call" in text_lower or "conference" in text_lower:
-                    call_links.append((text, full_url))
+                    call_links.append((text, url))
                 elif "presentation" in text_lower:
-                    pres_links.append((text, full_url))
+                    pres_links.append((text, url))
                 elif "result" in text_lower:
-                    qr_links.append((text, full_url))
+                    qr_links.append((text, url))
                 else:
-                    other_links.append((text, full_url))
+                    other_links.append((text, url))
 
             def render_section(title, links):
                 if links:
