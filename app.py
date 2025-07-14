@@ -34,7 +34,9 @@ if st.button("🔍 Fetch Filings"):
             soup = BeautifulSoup(response.content, "html.parser")
 
             all_text = soup.get_text()
-            all_links = re.findall(r"https://[^\s'"]+\.pdf", all_text)
+            
+            all_links = re.findall(r"https://[^\s\"']+\.pdf", all_text)
+
             pdf_urls = [(url.split("/")[-1], url) for url in all_links]
 
             ar_links = []
