@@ -1,6 +1,7 @@
 # 🤖 Streamlit App for Sophisticated DCF Valuation
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
@@ -18,16 +19,16 @@ with col1:
     forecast_years = st.number_input("Forecast Period (Years)", min_value=1, max_value=15, value=5)
     currency = st.selectbox("Currency", ["INR", "USD", "EUR", "GBP"])
     base_revenue = st.number_input("Base Year Revenue (in Cr or M)", min_value=0.0, value=1000.0)
-    revenue_growth = st.slider("Revenue Growth Rate (%)", 0.0, 50.0, value=10.0)
-    ebit_margin = st.slider("EBIT Margin (%)", 0.0, 100.0, value=20.0)
-    depreciation_pct = st.slider("Depreciation (% of Revenue)", 0.0, 50.0, value=5.0)
-    capex_pct = st.slider("CapEx (% of Revenue)", 0.0, 50.0, value=6.0)
+    revenue_growth = st.number_input("Revenue Growth Rate (%)", value=10.0)
+    ebit_margin = st.number_input("EBIT Margin (%)", value=20.0)
+    depreciation_pct = st.number_input("Depreciation (% of Revenue)", value=5.0)
+    capex_pct = st.number_input("CapEx (% of Revenue)", value=6.0)
 
 with col2:
-    wc_change_pct = st.slider("Change in Working Capital (% of Revenue)", -10.0, 10.0, value=1.0)
-    tax_rate = st.slider("Corporate Tax Rate (%)", 0.0, 50.0, value=25.0)
-    wacc = st.slider("WACC (%)", 0.0, 20.0, value=10.0)
-    terminal_growth = st.slider("Terminal Growth Rate (%)", 0.0, 10.0, value=4.0)
+    wc_change_pct = st.number_input("Change in Working Capital (% of Revenue)", value=1.0)
+    tax_rate = st.number_input("Corporate Tax Rate (%)", value=25.0)
+    wacc = st.number_input("WACC (%)", value=10.0)
+    terminal_growth = st.number_input("Terminal Growth Rate (%)", value=4.0)
     net_debt = st.number_input("Net Debt (Cash - Debt)", value=0.0)
     shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
 
@@ -70,3 +71,25 @@ if st.button("💰 Calculate DCF"):
     st.markdown(f"**Enterprise Value (FCF + Terminal):** {currency} {enterprise_value:,.2f}")
     st.markdown(f"**Equity Value (Enterprise - Net Debt):** {currency} {equity_value:,.2f}")
     st.success(f"🎯 Fair Value per Share: {currency} {fair_value_per_share:,.2f}")
+
+    st.subheader("📊 Sensitivity Analysis")
+    wacc_range = np.arange(wacc - 2, wacc + 3, 1)
+    growth_range = np.arange(terminal_growth - 1, terminal_growth + 2, 0.5)
+    sensitivity_data = []
+
+    for g in growth_range:
+        row = []
+        for w in wacc_range:
+            try:
+                term_val = (final_fcf * (1 + g / 100)) / ((w / 100) - (g / 100))
+                term_pv = term_val / ((1 + w / 100) ** forecast_years)
+                total_pv = total_pv_fcf + term_pv
+                equity_val = total_pv - net_debt
+                fair_val = equity_val / shares_outstanding
+                row.append(round(fair_val, 2))
+            except:
+                row.append("-")
+        sensitivity_data.append(row)
+
+    sensitivity_df = pd.DataFrame(sensitivity_data, columns=[f"WACC {w:.1f}%" for w in wacc_range], index=[f"g {g:.1f}%" for g in growth_range])
+    st.dataframe(sensitivity_df.style.format("{:.2f}"))
