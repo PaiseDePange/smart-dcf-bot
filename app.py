@@ -36,6 +36,7 @@ if st.button("💰 Calculate DCF"):
 
     revenue = base_revenue
     data = []
+    discount_factors = [(1 + wacc / 100) ** year for year in range(1, forecast_years + 1)]
     for year in range(1, forecast_years + 1):
         revenue *= (1 + revenue_growth / 100)
         ebit = revenue * (ebit_margin / 100)
@@ -45,24 +46,27 @@ if st.button("💰 Calculate DCF"):
         capex = revenue * (capex_pct / 100)
         wc_change = revenue * (wc_change_pct / 100)
         fcf = nopat + depreciation - capex - wc_change
-        data.append([f"Year {year}", round(revenue, 2), round(nopat, 2), round(depreciation, 2), round(capex, 2), round(wc_change, 2), round(fcf, 2)])
+        pv_fcf = fcf / discount_factors[year - 1]
+        data.append([f"Year {year}", round(revenue, 2), round(nopat, 2), round(depreciation, 2), round(capex, 2), round(wc_change, 2), round(fcf, 2), round(pv_fcf, 2)])
 
-    df = pd.DataFrame(data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow"])
+    df = pd.DataFrame(data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
     st.dataframe(df)
 
     st.subheader("📉 Terminal Value Calculation")
-    final_fcf = data[-1][-1]
+    final_fcf = data[-1][-2]  # FCF of last forecast year
     terminal_value = (final_fcf * (1 + terminal_growth / 100)) / (wacc / 100 - terminal_growth / 100)
-    st.write(f"**Terminal Value:** {currency} {terminal_value:,.2f}")
-
-    st.subheader("🧮 Present Value of Cash Flows")
-    discount_factors = [(1 + wacc / 100) ** year for year in range(1, forecast_years + 1)]
-    pv_fcfs = [data[i][-1] / discount_factors[i] for i in range(forecast_years)]
     pv_terminal = terminal_value / discount_factors[-1]
-    total_value = sum(pv_fcfs) + pv_terminal
-    equity_value = total_value - net_debt
+    st.markdown(f"**Terminal Value Formula:** Terminal FCF × (1 + g) / (WACC - g)")
+    st.markdown(f"**Computed Terminal Value:** {currency} {terminal_value:,.2f}")
+    st.markdown(f"**Discounted Terminal Value (PV):** {currency} {pv_terminal:,.2f}")
+
+    st.subheader("🧮 Present Value Summary")
+    total_pv_fcf = sum([row[-1] for row in data])
+    enterprise_value = total_pv_fcf + pv_terminal
+    equity_value = enterprise_value - net_debt
     fair_value_per_share = equity_value / shares_outstanding
 
-    st.write(f"**Enterprise Value:** {currency} {total_value:,.2f}")
-    st.write(f"**Equity Value:** {currency} {equity_value:,.2f}")
+    st.markdown(f"**Sum of PV of Free Cash Flows (Years 1-{forecast_years}):** {currency} {total_pv_fcf:,.2f}")
+    st.markdown(f"**Enterprise Value (FCF + Terminal):** {currency} {enterprise_value:,.2f}")
+    st.markdown(f"**Equity Value (Enterprise - Net Debt):** {currency} {equity_value:,.2f}")
     st.success(f"🎯 Fair Value per Share: {currency} {fair_value_per_share:,.2f}")
