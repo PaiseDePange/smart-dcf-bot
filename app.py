@@ -1,5 +1,6 @@
 # 🤖 Streamlit App for Sophisticated DCF Valuation
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
@@ -31,4 +32,37 @@ with col2:
     shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
 
 if st.button("💰 Calculate DCF"):
-    st.success("✅ DCF calculation button clicked. Computation logic will go here.")
+    st.subheader("📊 Projected Free Cash Flows")
+
+    revenue = base_revenue
+    data = []
+    for year in range(1, forecast_years + 1):
+        revenue *= (1 + revenue_growth / 100)
+        ebit = revenue * (ebit_margin / 100)
+        tax = ebit * (tax_rate / 100)
+        nopat = ebit - tax
+        depreciation = revenue * (depreciation_pct / 100)
+        capex = revenue * (capex_pct / 100)
+        wc_change = revenue * (wc_change_pct / 100)
+        fcf = nopat + depreciation - capex - wc_change
+        data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf])
+
+    df = pd.DataFrame(data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow"])
+    st.dataframe(df.style.format("{:.2f}"))
+
+    st.subheader("📉 Terminal Value Calculation")
+    final_fcf = data[-1][-1]
+    terminal_value = (final_fcf * (1 + terminal_growth / 100)) / (wacc / 100 - terminal_growth / 100)
+    st.write(f"**Terminal Value:** {currency} {terminal_value:,.2f}")
+
+    st.subheader("🧮 Present Value of Cash Flows")
+    discount_factors = [(1 + wacc / 100) ** year for year in range(1, forecast_years + 1)]
+    pv_fcfs = [data[i][-1] / discount_factors[i] for i in range(forecast_years)]
+    pv_terminal = terminal_value / discount_factors[-1]
+    total_value = sum(pv_fcfs) + pv_terminal
+    equity_value = total_value - net_debt
+    fair_value_per_share = equity_value / shares_outstanding
+
+    st.write(f"**Enterprise Value:** {currency} {total_value:,.2f}")
+    st.write(f"**Equity Value:** {currency} {equity_value:,.2f}")
+    st.success(f"🎯 Fair Value per Share: {currency} {fair_value_per_share:,.2f}")
