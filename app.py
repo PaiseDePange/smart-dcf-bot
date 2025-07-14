@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 from PyPDF2 import PdfReader
 from PIL import Image
 import io
+import os
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
@@ -88,8 +89,9 @@ with tabs[4]:
     if check_data:
         try:
             import pytesseract
+            if not shutil.which("tesseract"):
+                raise EnvironmentError("Tesseract is not installed or not found in PATH.")
 
-            # Check for OCR text from uploaded images
             for label, uploaded_image in screener_images.items():
                 if uploaded_image is not None:
                     st.subheader(f"🖼️ OCR Preview: {label}")
