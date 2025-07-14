@@ -6,12 +6,12 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
-# Custom CSS to increase tab label font size
+# Custom CSS to increase tab label font size further
 st.markdown("""
     <style>
     .stTabs [data-baseweb="tab"] {
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 24px;
+        font-weight: 700;
     }
     </style>
 """, unsafe_allow_html=True)
