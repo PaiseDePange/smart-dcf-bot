@@ -2,8 +2,20 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
+
+# Custom CSS to increase tab label font size
+st.markdown("""
+    <style>
+    .stTabs [data-baseweb="tab"] {
+        font-size: 20px;
+        font-weight: 600;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("🤖 AI-Powered Stock Analysis")
 
 # Tabs for Navigation
