@@ -57,21 +57,40 @@ with tabs[1]:
     def extract_balance_sheet_table(file):
         try:
             reader = PdfReader(file)
-            pages_with_tables = []
-            for i, page in enumerate(reader.pages):
+            balance_lines = []
+            for page in reader.pages:
                 text = page.extract_text()
-                if text and "Consolidated Balance Sheet" in text:
-                    pages_with_tables.append((i+1, text))
-            return pages_with_tables
+                if text and "Non-current Assets" in text and "Current Assets" in text:
+                    lines = text.splitlines()
+                    balance_lines.extend(lines)
+            return balance_lines
         except Exception as e:
-            return [(0, f"Error reading PDF: {e}")]
+            return [f"Error reading PDF: {e}"]
+
+    def parse_balance_sheet_lines(lines):
+        data = []
+        for line in lines:
+            parts = line.strip().split()
+            if len(parts) >= 3:
+                try:
+                    val2024 = float(parts[-2].replace(",", ""))
+                    val2023 = float(parts[-1].replace(",", ""))
+                    label = " ".join(parts[:-2])
+                    data.append((label, val2024, val2023))
+                except ValueError:
+                    continue
+        return pd.DataFrame(data, columns=["Item", "2024", "2023"])
 
     if annual_reports_files:
-        st.subheader("📘 Extracted Balance Sheet Sections")
+        st.subheader("📘 Extracted Balance Sheet Table")
         for uploaded_file in annual_reports_files:
-            sections = extract_balance_sheet_table(uploaded_file)
-            for page_num, content in sections:
-                st.text_area(f"Balance Sheet: {uploaded_file.name} - Page {page_num}", content, height=300)
+            st.markdown(f"**{uploaded_file.name}**")
+            lines = extract_balance_sheet_table(uploaded_file)
+            df = parse_balance_sheet_lines(lines)
+            if not df.empty:
+                st.dataframe(df)
+            else:
+                st.warning("No balance sheet data could be structured into a table.")
 
 # --- Tab 3: Technical ---
 with tabs[2]:
