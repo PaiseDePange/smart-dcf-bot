@@ -30,4 +30,5 @@ with col2:
     net_debt = st.number_input("Net Debt (Cash - Debt)", value=0.0)
     shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
 
-st.success("Inputs saved. You can now proceed to DCF calculations.")
+if st.button("💰 Calculate DCF"):
+    st.success("✅ DCF calculation button clicked. Computation logic will go here.")
