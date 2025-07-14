@@ -7,7 +7,7 @@ from PyPDF2 import PdfReader
 from PIL import Image
 import io
 import os
-import shutil  # ✅ Fix: Added missing import for shutil
+import shutil
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
@@ -87,28 +87,39 @@ with tabs[4]:
     st.header("🧪 Data Quality Checks")
     st.markdown("Verify if uploaded images are converted correctly and if PDFs have readable text.")
 
-    if check_data:
+    def tesseract_available():
         try:
             import pytesseract
-            if not shutil.which("tesseract"):
-                raise EnvironmentError("Tesseract is not installed or not found in PATH.")
+            return shutil.which("tesseract") is not None
+        except:
+            return False
 
+    if check_data:
+        # OCR Check
+        if tesseract_available():
+            import pytesseract
             for label, uploaded_image in screener_images.items():
                 if uploaded_image is not None:
-                    st.subheader(f"🖼️ OCR Preview: {label}")
-                    image = Image.open(uploaded_image)
-                    text = pytesseract.image_to_string(image)
-                    st.image(image, caption=label)
-                    st.text_area(f"Extracted Text - {label}", text, height=200)
-        except Exception as e:
-            st.error(f"Image OCR failed: {e}")
+                    try:
+                        st.subheader(f"🖼️ OCR Preview: {label}")
+                        image = Image.open(uploaded_image)
+                        text = pytesseract.image_to_string(image)
+                        st.image(image, caption=label)
+                        st.text_area(f"Extracted Text - {label}", text, height=200)
+                    except Exception as e:
+                        st.error(f"Failed to process {label}: {e}")
+        else:
+            st.error("Image OCR failed: Tesseract is not installed or not found in PATH.")
 
+        # PDF Preview
         def preview_pdf_text_from_url(pdf_url):
             try:
                 response = requests.get(pdf_url)
+                if not response.ok:
+                    raise ValueError("URL could not be fetched")
                 reader = PdfReader(io.BytesIO(response.content))
                 text = "\n".join(page.extract_text() or "" for page in reader.pages[:2])
-                return text.strip()[:2000]  # limit to 2000 chars
+                return text.strip()[:2000] if text else "No extractable text."
             except Exception as e:
                 return f"Error reading PDF: {e}"
 
