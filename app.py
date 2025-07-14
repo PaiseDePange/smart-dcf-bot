@@ -30,7 +30,7 @@ st.markdown("""
 st.title("🤖 AI-Powered Stock Analysis")
 
 # Tabs for Navigation
-tabs = st.tabs(["📥 Inputs", "📚 Fundamentals", "📈 Technical", "🧠 Conclusion", "🧪 Data Checks"])
+tabs = st.tabs(["📥 Inputs", "📚 Fundamentals", "📈 Technical", "🧠 Conclusion", "🧪 Data Checks", "📰 News"])
 
 # --- Tab 1: Inputs ---
 with tabs[0]:
@@ -89,3 +89,9 @@ with tabs[4]:
                     st.markdown(f"**📄 {uploaded_file.name}**")
                     text = preview_pdf_text_from_file(uploaded_file)
                     st.text_area(f"Extracted Text - {label} {i+1}", text, height=200)
+
+# --- Tab 6: News ---
+with tabs[5]:
+    st.header("📰 Latest News About the Stock")
+    st.markdown("This section will show real-time or recent news articles for the selected stock.")
+    st.markdown("(Integration in progress)")
