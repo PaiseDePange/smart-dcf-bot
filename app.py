@@ -33,9 +33,9 @@ if st.button("🔍 Fetch Filings"):
             response = requests.get(screener_url, headers=headers)
             soup = BeautifulSoup(response.content, "html.parser")
 
-            all_links = [link.get("href") for link in soup.find_all("a", href=True)]
-            pdf_links = [url for url in all_links if url.startswith("https://") and url.endswith(".pdf")]
-            pdf_urls = [(url.split("/")[-1], url) for url in pdf_links]
+            all_text = soup.get_text()
+            all_links = re.findall(r"https://[^\s'"]+\.pdf", all_text)
+            pdf_urls = [(url.split("/")[-1], url) for url in all_links]
 
             ar_links = []
             call_links = []
@@ -63,11 +63,11 @@ if st.button("🔍 Fetch Filings"):
                     for text, url in links:
                         st.markdown(f"- 🔗 [{text}]({url})")
 
-            render_section("📄 Annual Reports", ar_links[:5])
-            render_section("🔣 Earnings Call Transcripts", call_links[:5])
-            render_section("🖼️ Investor Presentations", pres_links[:5])
-            render_section("📈 Quarterly Financial Results", qr_links[:5])
-            render_section("📌 Other Documents", other_links[:10])
+            render_section("📄 Annual Reports", ar_links)
+            render_section("🔣 Earnings Call Transcripts", call_links)
+            render_section("🖼️ Investor Presentations", pres_links)
+            render_section("📈 Quarterly Financial Results", qr_links)
+            render_section("📌 Other Documents", other_links)
 
         except Exception as e:
             st.error(f"❌ Failed to fetch data from Screener.in: {str(e)}")
