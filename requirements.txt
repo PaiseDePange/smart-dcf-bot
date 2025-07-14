@@ -3,3 +3,4 @@ yfinance
 numpy
 PyPDF2
 pytesseract
+openai
