@@ -59,7 +59,7 @@ with tabs[0]:
         "Balance Sheet": st.file_uploader("Balance Sheet Screenshot", type=["png", "jpg", "jpeg"], key="bs"),
         "Cashflows": st.file_uploader("Cashflows Screenshot", type=["png", "jpg", "jpeg"], key="cf"),
         "Shareholding Pattern": st.file_uploader("Shareholding Pattern Screenshot", type=["png", "jpg", "jpeg"], key="shp"),
-    ]
+    }
 
     check_data = st.button("🔍 Check Data Quality")
 
