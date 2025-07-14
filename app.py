@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import streamlit.components.v1 as components
 from PyPDF2 import PdfReader
 from PIL import Image
-import pytesseract
 import io
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
@@ -86,17 +85,21 @@ with tabs[4]:
     st.header("🧪 Data Quality Checks")
     st.markdown("Verify if uploaded images are converted correctly and if PDFs have readable text.")
 
-    if 'check_data' in locals() and check_data:
-        # Check for OCR text from uploaded images
-        for label, uploaded_image in screener_images.items():
-            if uploaded_image is not None:
-                st.subheader(f"🖼️ OCR Preview: {label}")
-                image = Image.open(uploaded_image)
-                text = pytesseract.image_to_string(image)
-                st.image(image, caption=label)
-                st.text_area(f"Extracted Text - {label}", text, height=200)
+    if check_data:
+        try:
+            import pytesseract
 
-        # Preview first few lines of each PDF link if accessible
+            # Check for OCR text from uploaded images
+            for label, uploaded_image in screener_images.items():
+                if uploaded_image is not None:
+                    st.subheader(f"🖼️ OCR Preview: {label}")
+                    image = Image.open(uploaded_image)
+                    text = pytesseract.image_to_string(image)
+                    st.image(image, caption=label)
+                    st.text_area(f"Extracted Text - {label}", text, height=200)
+        except Exception as e:
+            st.error(f"Image OCR failed: {e}")
+
         def preview_pdf_text_from_url(pdf_url):
             try:
                 response = requests.get(pdf_url)
@@ -106,7 +109,8 @@ with tabs[4]:
             except Exception as e:
                 return f"Error reading PDF: {e}"
 
-        for i, url in enumerate(annual_links + earnings_calls + presentations):
+        all_urls = annual_links + earnings_calls + presentations
+        for i, url in enumerate(all_urls):
             if url:
                 st.subheader(f"📄 Preview: PDF Document {i+1}")
                 text = preview_pdf_text_from_url(url)
