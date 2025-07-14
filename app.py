@@ -19,7 +19,7 @@ st.markdown("""
 st.title("🤖 AI-Powered Stock Analysis")
 
 # Tabs for Navigation
-tabs = st.tabs(["📥 Inputs", "📚 Fundamentals", "📈 Technical", "🧠 Conclusion"])
+tabs = st.tabs(["📥 Inputs", "📚 Fundamentals", "📈 Technical", "🧠 Conclusion", "🧪 Data Checks"])
 
 # --- Tab 1: Inputs ---
 with tabs[0]:
@@ -74,3 +74,9 @@ with tabs[3]:
     st.header("🧠 Conclusion & Recommendation")
     st.markdown("This section will summarize findings and suggest an investment stance.")
     # (Placeholder)
+
+# --- Tab 5: Data Checks ---
+with tabs[4]:
+    st.header("🧪 Data Quality Checks")
+    st.markdown("Verify if uploaded images are converted correctly and if PDFs have readable text.")
+    st.markdown("(Placeholder: This section will show previews or summaries of parsed data from uploaded documents and screenshots.)")
