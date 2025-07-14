@@ -8,6 +8,7 @@ import io
 import os
 import shutil
 from datetime import datetime, timedelta
+from newsapi import NewsApiClient
 import openai
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
@@ -102,42 +103,53 @@ with tabs[5]:
     fetch_news = st.button("🔍 Fetch News for " + stock_dropdown)
 
     if fetch_news and stock_dropdown:
-        from googlesearch import search
-
-        today = datetime.today()
-        one_year_ago = today - timedelta(days=365)
-        query = f"{stock_dropdown} stock news site:moneycontrol.com OR site:business-standard.com OR site:livemint.com after:{one_year_ago.date()}"
-
-        st.subheader(f"🗂 Top News Links About {stock_dropdown}")
-        news_links = []
-        try:
-            for url in search(query, num_results=5):
-                news_links.append(url)
-        except Exception as e:
-            st.error(f"Failed to fetch news: {e}")
-
         col1, col2 = st.columns(2)
-
         with col1:
-            for url in news_links:
-                st.write(f"🔗 [{url}]({url})")
-
+            st.subheader(f"🗂 Top News Links About {stock_dropdown}")
         with col2:
-            if "OPENAI_API_KEY" in os.environ:
-                openai.api_key = os.environ["OPENAI_API_KEY"]
-                for url in news_links:
-                    try:
-                        response = requests.get(url, timeout=10)
-                        soup = BeautifulSoup(response.text, "html.parser")
-                        text = soup.get_text(" ", strip=True)[:3000]
-                        ai_prompt = f"Summarize this financial news article and give sentiment (Positive, Negative, Neutral):\n{text}"
-                        completion = openai.ChatCompletion.create(
-                            model="gpt-4",
-                            messages=[{"role": "user", "content": ai_prompt}]
-                        )
-                        summary = completion.choices[0].message.content
-                        st.markdown(f"**Summary:** {summary}")
-                    except Exception as e:
-                        st.error(f"Failed to summarize article: {e}")
-            else:
-                st.warning("OpenAI API key not found. Please set OPENAI_API_KEY in environment to enable AI summarization.")
+            st.subheader("🧠 News Summary and Sentiment")
+
+        try:
+            newsapi = NewsApiClient(api_key=os.getenv("NEWSAPI_KEY"))
+            today = datetime.today()
+            one_year_ago = today - timedelta(days=365)
+            all_articles = newsapi.get_everything(
+                q=stock_dropdown,
+                from_param=one_year_ago.strftime('%Y-%m-%d'),
+                language='en',
+                sort_by='relevancy',
+                page_size=5
+            )
+
+            for article in all_articles["articles"]:
+                url = article["url"]
+                title = article["title"]
+                source = article["source"]["name"]
+                published = article["publishedAt"]
+                summary_col1, summary_col2 = st.columns([1, 2])
+
+                with summary_col1:
+                    st.write(f"🔗 [{title}]({url})")
+                    st.caption(f"📰 {source} | 📅 {published[:10]}")
+
+                with summary_col2:
+                    if "OPENAI_API_KEY" in os.environ:
+                        openai.api_key = os.environ["OPENAI_API_KEY"]
+                        try:
+                            response = requests.get(url, timeout=10)
+                            soup = BeautifulSoup(response.text, "html.parser")
+                            text = soup.get_text(" ", strip=True)[:3000]
+                            ai_prompt = f"Summarize this financial news article and tag it as Positive, Negative or Neutral:\n{text}"
+                            completion = openai.ChatCompletion.create(
+                                model="gpt-4",
+                                messages=[{"role": "user", "content": ai_prompt}]
+                            )
+                            summary = completion.choices[0].message.content
+                            st.markdown(f"**Summary:** {summary}")
+                        except Exception as e:
+                            st.error(f"Summarization error: {e}")
+                    else:
+                        st.warning("OpenAI API key not found. Please set OPENAI_API_KEY.")
+
+        except Exception as e:
+            st.error(f"News API error: {e}")
