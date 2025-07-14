@@ -8,8 +8,7 @@ import io
 import os
 import shutil
 from datetime import datetime, timedelta
-from newsapi import NewsApiClient
-import openai
+# Removed newsapi and openai imports
 import re
 import pandas as pd
 
@@ -35,7 +34,7 @@ st.markdown("""
 st.title("🤖 AI-Powered Stock Analysis")
 
 # Tabs for Navigation
-tabs = st.tabs(["📥 Inputs", "📚 Fundamentals", "📈 Technical", "🧠 Conclusion", "🧪 Data Checks", "📰 News"])
+tabs = st.tabs(["📥 Inputs", "📚 Fundamentals", "📈 Technical", "🧠 Conclusion", "🧪 Data Checks", "🗞️ News"])
 
 # --- Tab 1: Inputs ---
 with tabs[0]:
@@ -59,7 +58,6 @@ with tabs[1]:
         try:
             reader = PdfReader(file)
             full_text = "\n".join(page.extract_text() or "" for page in reader.pages)
-            # Look for patterns that resemble balance sheet sections
             match = re.search(r"(Consolidated Balance Sheet.*?)(\n\s*Consolidated Statement|\n\s*Statement of Profit|\n\s*Notes|\Z)", full_text, re.DOTALL | re.IGNORECASE)
             if match:
                 return match.group(1)
@@ -85,13 +83,11 @@ with tabs[1]:
 with tabs[2]:
     st.header("📈 Technical Analysis")
     st.markdown("Technical indicators and chart positioning will be shown here.")
-    # (Placeholder)
 
 # --- Tab 4: Conclusion ---
 with tabs[3]:
     st.header("🧠 Conclusion & Recommendation")
     st.markdown("This section will summarize findings and suggest an investment stance.")
-    # (Placeholder)
 
 # --- Tab 5: Data Checks ---
 with tabs[4]:
@@ -123,6 +119,6 @@ with tabs[4]:
 
 # --- Tab 6: News ---
 with tabs[5]:
-    st.header("📰 Latest News About the Stock")
+    st.header("🗞️ Latest News About the Stock")
     st.markdown("This section summarizes news headlines from the past year with AI-powered summaries and sentiment analysis.")
     st.warning("News summarization module requires online access and API keys. This section will be enhanced later.")
