@@ -24,8 +24,38 @@ tabs = st.tabs(["📥 Inputs", "📚 Fundamentals", "📈 Technical", "🧠 Conc
 # --- Tab 1: Inputs ---
 with tabs[0]:
     st.header("📥 Inputs")
-    st.markdown("Select a company and upload or fetch financial data.")
-    # (Placeholder - functionality to be added in next step)
+    st.markdown("Provide data to feed the AI for analysis.")
+
+    st.subheader("1️⃣ Last Two Annual Reports")
+    annual_links = [
+        st.text_input("Annual Report Link 1 (PDF URL)"),
+        st.text_input("Annual Report Link 2 (PDF URL)")
+    ]
+
+    st.subheader("2️⃣ Last 4 Earnings Call Transcripts")
+    earnings_calls = [
+        st.text_input("Earnings Call Transcript 1 (PDF URL)"),
+        st.text_input("Earnings Call Transcript 2 (PDF URL)"),
+        st.text_input("Earnings Call Transcript 3 (PDF URL)"),
+        st.text_input("Earnings Call Transcript 4 (PDF URL)")
+    ]
+
+    st.subheader("3️⃣ Last 4 Investor Presentations")
+    presentations = [
+        st.text_input("Investor Presentation 1 (PDF URL)"),
+        st.text_input("Investor Presentation 2 (PDF URL)"),
+        st.text_input("Investor Presentation 3 (PDF URL)"),
+        st.text_input("Investor Presentation 4 (PDF URL)")
+    ]
+
+    st.subheader("4️⃣ Screenshots from Screener.in")
+    screener_images = {
+        "Quarterly Results": st.file_uploader("Quarterly Results Screenshot", type=["png", "jpg", "jpeg"]),
+        "Annual P&L": st.file_uploader("Annual P&L Screenshot", type=["png", "jpg", "jpeg"]),
+        "Balance Sheet": st.file_uploader("Balance Sheet Screenshot", type=["png", "jpg", "jpeg"]),
+        "Cashflows": st.file_uploader("Cashflows Screenshot", type=["png", "jpg", "jpeg"]),
+        "Shareholding Pattern": st.file_uploader("Shareholding Pattern Screenshot", type=["png", "jpg", "jpeg"]),
+    }
 
 # --- Tab 2: Fundamentals ---
 with tabs[1]:
