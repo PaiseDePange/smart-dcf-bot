@@ -45,10 +45,10 @@ if st.button("💰 Calculate DCF"):
         capex = revenue * (capex_pct / 100)
         wc_change = revenue * (wc_change_pct / 100)
         fcf = nopat + depreciation - capex - wc_change
-        data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf])
+        data.append([f"Year {year}", round(revenue, 2), round(nopat, 2), round(depreciation, 2), round(capex, 2), round(wc_change, 2), round(fcf, 2)])
 
     df = pd.DataFrame(data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow"])
-    st.dataframe(df.style.format("{:.2f}"))
+    st.dataframe(df)
 
     st.subheader("📉 Terminal Value Calculation")
     final_fcf = data[-1][-1]
