@@ -31,29 +31,11 @@ with tabs[0]:
     st.header("📥 Inputs")
     st.markdown("Provide data to feed the AI for analysis.")
 
-    st.subheader("1️⃣ Last Two Annual Reports")
-    annual_links = [
-        st.text_input("Annual Report Link 1 (PDF URL)"),
-        st.text_input("Annual Report Link 2 (PDF URL)")
-    ]
+    transcripts_files = st.file_uploader("Upload Earnings Call Transcripts (max 6)", type=["pdf"], accept_multiple_files=True)
+    presentations_files = st.file_uploader("Upload Investor Presentations (max 6)", type=["pdf"], accept_multiple_files=True)
+    annual_reports_files = st.file_uploader("Upload Annual Reports (max 6)", type=["pdf"], accept_multiple_files=True)
 
-    st.subheader("2️⃣ Last 4 Earnings Call Transcripts")
-    earnings_calls = [
-        st.text_input("Earnings Call Transcript 1 (PDF URL)"),
-        st.text_input("Earnings Call Transcript 2 (PDF URL)"),
-        st.text_input("Earnings Call Transcript 3 (PDF URL)"),
-        st.text_input("Earnings Call Transcript 4 (PDF URL)")
-    ]
-
-    st.subheader("3️⃣ Last 4 Investor Presentations")
-    presentations = [
-        st.text_input("Investor Presentation 1 (PDF URL)"),
-        st.text_input("Investor Presentation 2 (PDF URL)"),
-        st.text_input("Investor Presentation 3 (PDF URL)"),
-        st.text_input("Investor Presentation 4 (PDF URL)")
-    ]
-
-    st.subheader("4️⃣ Screenshots from Screener.in")
+    st.subheader("📷 Screener.in Screenshots")
     screener_images = {
         "Quarterly Results": st.file_uploader("Quarterly Results Screenshot", type=["png", "jpg", "jpeg"], key="qr"),
         "Annual P&L": st.file_uploader("Annual P&L Screenshot", type=["png", "jpg", "jpeg"], key="pl"),
@@ -112,20 +94,22 @@ with tabs[4]:
             st.error("Image OCR failed: Tesseract is not installed or not found in PATH.")
 
         # PDF Preview
-        def preview_pdf_text_from_url(pdf_url):
+        def preview_pdf_text_from_file(uploaded_file):
             try:
-                response = requests.get(pdf_url)
-                if not response.ok:
-                    raise ValueError("URL could not be fetched")
-                reader = PdfReader(io.BytesIO(response.content))
+                reader = PdfReader(uploaded_file)
                 text = "\n".join(page.extract_text() or "" for page in reader.pages[:2])
                 return text.strip()[:2000] if text else "No extractable text."
             except Exception as e:
                 return f"Error reading PDF: {e}"
 
-        all_urls = annual_links + earnings_calls + presentations
-        for i, url in enumerate(all_urls):
-            if url:
-                st.subheader(f"📄 Preview: PDF Document {i+1}")
-                text = preview_pdf_text_from_url(url)
-                st.text_area(f"Extracted PDF Text {i+1}", text, height=200)
+        all_groups = {
+            "Earnings Call Transcripts": transcripts_files,
+            "Investor Presentations": presentations_files,
+            "Annual Reports": annual_reports_files,
+        }
+
+        for label, files in all_groups.items():
+            for i, uploaded_file in enumerate(files or []):
+                st.subheader(f"📄 Preview: {label} {i+1}")
+                text = preview_pdf_text_from_file(uploaded_file)
+                st.text_area(f"Extracted Text - {label} {i+1}", text, height=200)
