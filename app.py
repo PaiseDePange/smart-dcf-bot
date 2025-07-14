@@ -83,7 +83,9 @@ with tabs[4]:
         }
 
         for label, files in all_groups.items():
-            for i, uploaded_file in enumerate(files or []):
-                st.subheader(f"📄 Preview: {label} {i+1}")
-                text = preview_pdf_text_from_file(uploaded_file)
-                st.text_area(f"Extracted Text - {label} {i+1}", text, height=200)
+            if files:
+                st.subheader(f"📁 Uploaded: {label}")
+                for i, uploaded_file in enumerate(files):
+                    st.markdown(f"**📄 {uploaded_file.name}**")
+                    text = preview_pdf_text_from_file(uploaded_file)
+                    st.text_area(f"Extracted Text - {label} {i+1}", text, height=200)
