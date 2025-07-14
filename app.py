@@ -1,4 +1,4 @@
-# 🗕️ Streamlit App to Fetch Company Filings (Using Screener.in)
+# 🔕️ Streamlit App to Fetch Company Filings (Using Screener.in)
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
@@ -106,7 +106,7 @@ with tabs[4]:
             except Exception as e:
                 return f"Error reading PDF: {e}"
 
-        for i, url in enumerate(annual_links + earnings_calls):
+        for i, url in enumerate(annual_links + earnings_calls + presentations):
             if url:
                 st.subheader(f"📄 Preview: PDF Document {i+1}")
                 text = preview_pdf_text_from_url(url)
