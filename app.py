@@ -7,6 +7,7 @@ from PyPDF2 import PdfReader
 from PIL import Image
 import io
 import os
+import shutil  # ✅ Fix: Added missing import for shutil
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
