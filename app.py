@@ -33,11 +33,8 @@ if st.button("🔍 Fetch Filings"):
             response = requests.get(screener_url, headers=headers)
             soup = BeautifulSoup(response.content, "html.parser")
 
-            all_text = soup.get_text()
-            
-            all_links = re.findall(r"https://[^\s\"']+\.pdf", all_text)
-
-            pdf_urls = [(url.split("/")[-1], url) for url in all_links]
+            all_links = [a['href'] for a in soup.find_all('a', href=True) if a['href'].endswith('.pdf')]
+            pdf_urls = [(url.split("/")[-1], "https://www.screener.in" + url if url.startswith("/") else url) for url in all_links]
 
             ar_links = []
             call_links = []
