@@ -3,6 +3,10 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import streamlit.components.v1 as components
+from PyPDF2 import PdfReader
+from PIL import Image
+import pytesseract
+import io
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
@@ -50,11 +54,11 @@ with tabs[0]:
 
     st.subheader("4️⃣ Screenshots from Screener.in")
     screener_images = {
-        "Quarterly Results": st.file_uploader("Quarterly Results Screenshot", type=["png", "jpg", "jpeg"]),
-        "Annual P&L": st.file_uploader("Annual P&L Screenshot", type=["png", "jpg", "jpeg"]),
-        "Balance Sheet": st.file_uploader("Balance Sheet Screenshot", type=["png", "jpg", "jpeg"]),
-        "Cashflows": st.file_uploader("Cashflows Screenshot", type=["png", "jpg", "jpeg"]),
-        "Shareholding Pattern": st.file_uploader("Shareholding Pattern Screenshot", type=["png", "jpg", "jpeg"]),
+        "Quarterly Results": st.file_uploader("Quarterly Results Screenshot", type=["png", "jpg", "jpeg"], key="qr"),
+        "Annual P&L": st.file_uploader("Annual P&L Screenshot", type=["png", "jpg", "jpeg"], key="pl"),
+        "Balance Sheet": st.file_uploader("Balance Sheet Screenshot", type=["png", "jpg", "jpeg"], key="bs"),
+        "Cashflows": st.file_uploader("Cashflows Screenshot", type=["png", "jpg", "jpeg"], key="cf"),
+        "Shareholding Pattern": st.file_uploader("Shareholding Pattern Screenshot", type=["png", "jpg", "jpeg"], key="shp"),
     }
 
 # --- Tab 2: Fundamentals ---
@@ -79,4 +83,28 @@ with tabs[3]:
 with tabs[4]:
     st.header("🧪 Data Quality Checks")
     st.markdown("Verify if uploaded images are converted correctly and if PDFs have readable text.")
-    st.markdown("(Placeholder: This section will show previews or summaries of parsed data from uploaded documents and screenshots.)")
+
+    # Check for OCR text from uploaded images
+    for label, uploaded_image in screener_images.items():
+        if uploaded_image is not None:
+            st.subheader(f"🖼️ OCR Preview: {label}")
+            image = Image.open(uploaded_image)
+            text = pytesseract.image_to_string(image)
+            st.image(image, caption=label)
+            st.text_area(f"Extracted Text - {label}", text, height=200)
+
+    # Preview first few lines of each PDF link if accessible
+    def preview_pdf_text_from_url(pdf_url):
+        try:
+            response = requests.get(pdf_url)
+            reader = PdfReader(io.BytesIO(response.content))
+            text = "\n".join(page.extract_text() or "" for page in reader.pages[:2])
+            return text.strip()[:2000]  # limit to 2000 chars
+        except Exception as e:
+            return f"Error reading PDF: {e}"
+
+    for i, url in enumerate(annual_links + earnings_calls):
+        if url:
+            st.subheader(f"📄 Preview: PDF Document {i+1}")
+            text = preview_pdf_text_from_url(url)
+            st.text_area(f"Extracted PDF Text {i+1}", text, height=200)
