@@ -59,7 +59,9 @@ with tabs[0]:
         "Balance Sheet": st.file_uploader("Balance Sheet Screenshot", type=["png", "jpg", "jpeg"], key="bs"),
         "Cashflows": st.file_uploader("Cashflows Screenshot", type=["png", "jpg", "jpeg"], key="cf"),
         "Shareholding Pattern": st.file_uploader("Shareholding Pattern Screenshot", type=["png", "jpg", "jpeg"], key="shp"),
-    }
+    ]
+
+    check_data = st.button("🔍 Check Data Quality")
 
 # --- Tab 2: Fundamentals ---
 with tabs[1]:
@@ -84,27 +86,28 @@ with tabs[4]:
     st.header("🧪 Data Quality Checks")
     st.markdown("Verify if uploaded images are converted correctly and if PDFs have readable text.")
 
-    # Check for OCR text from uploaded images
-    for label, uploaded_image in screener_images.items():
-        if uploaded_image is not None:
-            st.subheader(f"🖼️ OCR Preview: {label}")
-            image = Image.open(uploaded_image)
-            text = pytesseract.image_to_string(image)
-            st.image(image, caption=label)
-            st.text_area(f"Extracted Text - {label}", text, height=200)
+    if 'check_data' in locals() and check_data:
+        # Check for OCR text from uploaded images
+        for label, uploaded_image in screener_images.items():
+            if uploaded_image is not None:
+                st.subheader(f"🖼️ OCR Preview: {label}")
+                image = Image.open(uploaded_image)
+                text = pytesseract.image_to_string(image)
+                st.image(image, caption=label)
+                st.text_area(f"Extracted Text - {label}", text, height=200)
 
-    # Preview first few lines of each PDF link if accessible
-    def preview_pdf_text_from_url(pdf_url):
-        try:
-            response = requests.get(pdf_url)
-            reader = PdfReader(io.BytesIO(response.content))
-            text = "\n".join(page.extract_text() or "" for page in reader.pages[:2])
-            return text.strip()[:2000]  # limit to 2000 chars
-        except Exception as e:
-            return f"Error reading PDF: {e}"
+        # Preview first few lines of each PDF link if accessible
+        def preview_pdf_text_from_url(pdf_url):
+            try:
+                response = requests.get(pdf_url)
+                reader = PdfReader(io.BytesIO(response.content))
+                text = "\n".join(page.extract_text() or "" for page in reader.pages[:2])
+                return text.strip()[:2000]  # limit to 2000 chars
+            except Exception as e:
+                return f"Error reading PDF: {e}"
 
-    for i, url in enumerate(annual_links + earnings_calls):
-        if url:
-            st.subheader(f"📄 Preview: PDF Document {i+1}")
-            text = preview_pdf_text_from_url(url)
-            st.text_area(f"Extracted PDF Text {i+1}", text, height=200)
+        for i, url in enumerate(annual_links + earnings_calls):
+            if url:
+                st.subheader(f"📄 Preview: PDF Document {i+1}")
+                text = preview_pdf_text_from_url(url)
+                st.text_area(f"Extracted PDF Text {i+1}", text, height=200)
