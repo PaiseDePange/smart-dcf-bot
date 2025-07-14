@@ -54,30 +54,24 @@ with tabs[1]:
     st.header("📚 Fundamental Analysis")
     st.markdown("This section will include extracted ratios, growth, and valuation models like DCF.")
 
-    def extract_balance_sheet_text(file):
+    def extract_balance_sheet_table(file):
         try:
             reader = PdfReader(file)
-            full_text = "\n".join(page.extract_text() or "" for page in reader.pages)
-            match = re.search(r"(Consolidated Balance Sheet.*?)(\n\s*Consolidated Statement|\n\s*Statement of Profit|\n\s*Notes|\Z)", full_text, re.DOTALL | re.IGNORECASE)
-            if match:
-                return match.group(1)
-            return "No balance sheet section found."
+            pages_with_tables = []
+            for i, page in enumerate(reader.pages):
+                text = page.extract_text()
+                if text and "Consolidated Balance Sheet" in text:
+                    pages_with_tables.append((i+1, text))
+            return pages_with_tables
         except Exception as e:
-            return f"Error reading balance sheet: {e}"
+            return [(0, f"Error reading PDF: {e}")]
 
     if annual_reports_files:
-        data_by_year = {}
-
-        for uploaded_file in annual_reports_files:
-            text = extract_balance_sheet_text(uploaded_file)
-            year_match = re.search(r'(\d{4})\s*Consolidated Balance Sheet', text, re.IGNORECASE)
-            year = year_match.group(1) if year_match else uploaded_file.name[-8:-4]
-            data_by_year[year] = text
-
         st.subheader("📘 Extracted Balance Sheet Sections")
-
-        for year, data in sorted(data_by_year.items()):
-            st.text_area(f"Balance Sheet: {year}", data, height=300)
+        for uploaded_file in annual_reports_files:
+            sections = extract_balance_sheet_table(uploaded_file)
+            for page_num, content in sections:
+                st.text_area(f"Balance Sheet: {uploaded_file.name} - Page {page_num}", content, height=300)
 
 # --- Tab 3: Technical ---
 with tabs[2]:
