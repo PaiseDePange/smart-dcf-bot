@@ -86,6 +86,7 @@ with tabs[0]:
     if st.session_state.get("data_imported"):
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
         st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5)
+        
         df = st.session_state["annual_pl"].copy()
         df = df.set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
@@ -98,15 +99,15 @@ with tabs[0]:
         other_expenses_cost = df.loc["Other Expenses"].dropna()
          
         try:
-            calculated_ebit = revenue_row[-1] 
-            - raw_material_cost[-1]
-            - inventory_cost[-1]
-            - power_and_fule_cost[-1]
-            - other_mfr_exp_cost[-1]
-            - emp_cost[-1]
-            - selling_and_admin_cost[-1]
-            - other_expenses_cost[-1]
-            latest_revenue = revenue_row[-1]
+            calculated_ebit = (revenue_row[-1] 
+                                - raw_material_cost[-1]
+                                - inventory_cost[-1]
+                                - power_and_fule_cost[-1]
+                                - other_mfr_exp_cost[-1]
+                                - emp_cost[-1]
+                                - selling_and_admin_cost[-1]
+                                - other_expenses_cost[-1])
+            latest_revenue = revenue_row[-1])
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
         except:
             calculated_ebit = None
