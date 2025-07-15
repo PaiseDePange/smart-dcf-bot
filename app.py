@@ -110,35 +110,36 @@ with tabs[0]:
             latest_revenue = revenue_row[-1]
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
         except:
-            calculated_ebit = None
-            calculated_ebit_margin = None
+            calculated_ebit = 0
+            calculated_ebit_margin = 0
 
-        st.markdown(f"**Latest Calculated EBIT:** {calculated_ebit:,.2f} INR" if calculated_ebit is not None else "**Latest Calculated EBIT:** Not available")
-        st.markdown(f"**Latest Calculated EBIT Margin:** {calculated_ebit_margin}%" if calculated_ebit_margin is not None else "**Latest Calculated EBIT Margin:** Not available")
+       # st.markdown(f"**Latest Calculated EBIT:** {calculated_ebit:,.2f} INR" if calculated_ebit is not None else "**Latest Calculated EBIT:** Not available")
+       # st.markdown(f"**Latest Calculated EBIT Margin:** {calculated_ebit_margin}%" if calculated_ebit_margin is not None else "**Latest Calculated EBIT Margin:** Not available")
 
-        st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=20.0, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
+        st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=calculated_ebit_margin, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
 
         depreciation_row = df.loc["Depreciation"] if "Depreciation" in df.index else None
-        calculated_depr_pct = round((depreciation_row.values[-1] / revenue_row.values[-1]) * 100, 2) if depreciation_row is not None else None
-        st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=5.0, help=f"Last actual depreciation ratio: {calculated_depr_pct}%" if calculated_depr_pct else "Depreciation not found in data")
+        calculated_depr_pct = round((depreciation_row.values[-1] / revenue_row.values[-1]) * 100, 2) if depreciation_row is not None else 0
+        st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=calculated_depr_pct, help=f"Last actual depreciation ratio: {calculated_depr_pct}%" if calculated_depr_pct else "Depreciation not found in data")
 
-        capex_row = df.loc["Capital Expenditures"] if "Capital Expenditures" in df.index else None
-        calculated_capex_pct = round((capex_row.values[-1] / revenue_row.values[-1]) * 100, 2) if capex_row is not None else None
-        st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=6.0, help=f"Last actual CapEx ratio: {calculated_capex_pct}%" if calculated_capex_pct else "CapEx not found in data")
+        #capex_row = df.loc["Capital Expenditures"] if "Capital Expenditures" in df.index else None
+        #calculated_capex_pct = round((capex_row.values[-1] / revenue_row.values[-1]) * 100, 2) if capex_row is not None else None
+        st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=4.0, help=f"user need to update this")
 
         st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0)
 
         tax_row = df.loc["Tax"] if "Tax" in df.index else None
-        calculated_tax_pct = round((tax_row.values[-1] / calculated_ebit) * 100, 2) if tax_row is not None and calculated_ebit is not None else None
-        st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value=25.0, help=f"Last actual tax rate: {calculated_tax_pct}%" if calculated_tax_pct else "Tax not found in data")
+        calculated_tax_pct = round((tax_row.values[-1] / calculated_ebit) * 100, 2) if tax_row is not None and calculated_ebit is not None else 0
+        st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value= calculated_tax_pct , help=f"Last actual tax rate: {calculated_tax_pct}%" if calculated_tax_pct else "Tax not found in data")
 
         shares_row = st.session_state["balance_sheet"].copy()
         shares_row = shares_row.set_index("Report Date")
-        share_cap = shares_row.loc["Equity Share Capital"].dropna().values[-1] if "Equity Share Capital" in shares_row.index else None
-        st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr or M)", value=10.0, help=f"Last actual equity share capital: {share_cap}" if share_cap else "Equity Share Capital not found")
+        share_cap = shares_row.loc["No. of Equity Shares"].dropna().values[-1]/10000000 if "No. of Equity Shares" in shares_row.index else 0
+        st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=share_cap, help=f"Last actual equity share capital: {share_cap}" if share_cap else "Equity Share Capital not found")
 
-        st.session_state["user_growth_rate"] = st.number_input("Revenue Growth Rate for Projection (%)", value=10.0)
-        st.session_state["terminal_growth"] = st.number_input("Terminal Growth Rate (%)", value=4.0)
+        st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Revenue Growth Rate for Projection for year 1 and 2 (%)", value=10.0)
+        st.session_state["user_growth_rate_yr_3_4_5"] = st.number_input("Revenue Growth Rate for Projection for year 3, 4 and 5 and  (%)", value=10.0)
+        st.session_state["user_growth_rate_yr_6_onwards"] = st.number_input("Revenue Growth Rate from year 6 onwards - terminal growth rate -  (%)", value= 4.0)
 
 # --- DCF TAB ---
 with tabs[1]:
