@@ -35,12 +35,12 @@ def format_column_headers(headers):
 
 def extract_table(df, start_label, col_count=11):
     start_row = df[df.iloc[:, 0] == start_label].index[0]
-    header_row = start_row +1
+    header_row = start_row + 1
     headers_raw = df.iloc[header_row, 0:col_count].tolist()
     headers = format_column_headers(headers_raw)
     column_names = headers
     data_rows = []
-    for i in range(start_row, df.shape[0]):
+    for i in range(start_row+2, df.shape[0]):
         row = df.iloc[i, 0:col_count]
         if row.isnull().all():
             break
