@@ -72,6 +72,8 @@ with tabs[0]:
 
     if st.session_state.get("data_imported"):
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
+        st.markdown(f"**Latest Calculated EBIT:** {calculated_ebit:,.2f} INR" if calculated_ebit is not None else "**Latest Calculated EBIT:** Not available")
+        st.markdown(f"**Latest Calculated EBIT Margin:** {calculated_ebit_margin}%" if calculated_ebit_margin is not None else "**Latest Calculated EBIT Margin:** Not available")
         st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5)
 
         df = st.session_state["annual_pl"].copy()
@@ -88,8 +90,15 @@ with tabs[0]:
                 - df.loc.get("Selling and admin", 0)
                 - df.loc.get("Other Expenses", 0)
             )
-            calculated_ebit = ebit_calc_row.dropna().values[-1]
-            calculated_ebit_margin = round((calculated_ebit / revenue_row.values[-1]) * 100, 2)
+            common_index = ebit_calc_row.dropna().index.intersection(revenue_row.dropna().index)
+            if not common_index.empty:
+                latest_col = common_index[-1]
+                calculated_ebit = ebit_calc_row[latest_col]
+                latest_revenue = revenue_row[latest_col]
+                calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
+            else:
+                calculated_ebit = None
+                calculated_ebit_margin = None
         except:
             calculated_ebit = None
             calculated_ebit_margin = None
@@ -201,6 +210,23 @@ with tabs[1]:
 # --- EPS TAB ---
 with tabs[2]:
     st.header("📈 EPS Projection")
+
+    if st.session_state.get("data_imported"):
+        st.subheader("📌 Assumptions Used")
+        st.markdown(f"- **EBIT Margin:** {st.session_state['ebit_margin']}%")
+        st.markdown(f"- **Depreciation (% of Revenue):** {st.session_state['depreciation_pct']}%")
+        st.markdown(f"- **CapEx (% of Revenue):** {st.session_state['capex_pct']}%")
+        st.markdown(f"- **Interest (% of Revenue):** {st.session_state['interest_pct']}%")
+        st.markdown(f"- **Tax Rate:** {st.session_state['tax_rate']}%")
+        st.markdown(f"- **Growth Rate:** {st.session_state['user_growth_rate']}%")
+        st.markdown("
+### 🧮 Key Calculation Formulas")
+        st.markdown("- **EBIT** = Revenue × EBIT Margin")
+        st.markdown("- **Depreciation/CapEx/Interest** = Revenue × respective %")
+        st.markdown("- **PBT** = EBIT - Interest")
+        st.markdown("- **Tax** = PBT × Tax Rate")
+        st.markdown("- **PAT** = PBT - Tax")
+        st.markdown("- **EPS** = PAT / Shares Outstanding")
     if st.session_state.get("data_imported") and st.button("📊 Calculate EPS Projection"):
         df = st.session_state["annual_pl"].copy()
         df = df.set_index("Report Date")
