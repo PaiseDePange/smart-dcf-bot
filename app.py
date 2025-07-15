@@ -4,9 +4,9 @@ import pandas as pd
 import numpy as np
 from collections import Counter
 
-st.set_page_config(page_title="AI Investment Assistant", layout="wide")
+st.set_page_config(page_title="Investment Assistant", layout="wide")
 
-st.title("🤖 AI-Powered Stock Analysis")
+st.title("🤖 Stock Analysis Tool")
 st.caption("📦 Version: 1.0 Stable")
 
 # Utility functions
@@ -77,8 +77,23 @@ with tabs[0]:
         df = st.session_state["annual_pl"].copy()
         df = df.set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
-        ebit_row = df.loc["EBIT"] if "EBIT" in df.index else None
-        calculated_ebit_margin = round((ebit_row.values[-1] / revenue_row.values[-1]) * 100, 2) if ebit_row is not None else None
+        try:
+            ebit_calc_row = (
+                df.loc["Sales"]
+                - df.loc.get("Raw Material Cost", 0)
+                - df.loc.get("Change in Inventory", 0)
+                - df.loc.get("Power and Fuel", 0)
+                - df.loc.get("Other Mfr. Exp", 0)
+                - df.loc.get("Employee Cost", 0)
+                - df.loc.get("Selling and admin", 0)
+                - df.loc.get("Other Expenses", 0)
+            )
+            calculated_ebit = ebit_calc_row.dropna().values[-1]
+            calculated_ebit_margin = round((calculated_ebit / revenue_row.values[-1]) * 100, 2)
+        except:
+            calculated_ebit = None
+            calculated_ebit_margin = None
+
         st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=20.0, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
 
         depreciation_row = df.loc["Depreciation"] if "Depreciation" in df.index else None
@@ -210,8 +225,7 @@ with tabs[2]:
         tax_0 = pbt_0 * (tax_rate / 100)
         pat_0 = pbt_0 - tax_0
         eps_0 = pat_0 / shares if shares else 0
-
-        (["Year 0", base_revenue, ebit_0, dep_0, capex_0, interest_0, pbt_0, tax_0, pat_0, eps_0])
+        eps_projection.append(["Year 0", base_revenue, ebit_0, dep_0, capex_0, interest_0, pbt_0, tax_0, pat_0, eps_0])
         revenue = base_revenue
 
         for year in range(1, forecast_years + 1):
