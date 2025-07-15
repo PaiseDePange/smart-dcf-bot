@@ -83,7 +83,7 @@ with tabs[0]:
         currency = st.selectbox("Currency", ["INR", "USD", "EUR", "GBP"])
         ebit_margin = st.number_input("EBIT Margin (%)", value=20.0)
         depreciation_pct = st.number_input("Depreciation (% of Revenue)", value=5.0)
-        interest_pct = st.number_input("Interest Expense (% of Revenue)", value=1.0)
+        interest_pct = st.number_input("WACC (%)", value=10.0)
 
     with col2:
         tax_rate = st.number_input("Corporate Tax Rate (%)", value=25.0)
@@ -104,7 +104,7 @@ with tabs[1]:
             st.markdown("### Assumptions")
             st.markdown(f"- Forecast Period: **{forecast_years} years**")
             st.markdown(f"- Revenue Growth Rate: **{user_growth_rate}%**")
-            st.markdown(f"- EBIT Margin: **{ebit_margin}%**, Depreciation: **{depreciation_pct}%**, Interest: **{interest_pct}%**")
+            st.markdown(f"- EBIT Margin: **{ebit_margin}%**, Depreciation: **{depreciation_pct}%**, WACC: **{interest_pct}%**")
             st.markdown(f"- Tax Rate: **{tax_rate}%**, Shares Outstanding: **{shares_outstanding}**")
 
             df = st.session_state["annual_pl"].copy()
@@ -135,8 +135,14 @@ with tabs[1]:
 
             st.subheader("📉 Terminal Value Calculation")
             final_fcf = fcf_data[-1][-2]
-            terminal_value = (final_fcf * (1 + 4 / 100)) / (interest_pct / 100 - 4 / 100)
-            pv_terminal = terminal_value / discount_factors[-1]
+            if interest_pct > 4:
+                terminal_value = (final_fcf * (1 + 4 / 100)) / ((interest_pct - 4) / 100)
+                pv_terminal = terminal_value / discount_factors[-1]
+            else:
+                terminal_value = 0
+                pv_terminal = 0
+                st.warning("⚠️ WACC should be greater than terminal growth rate (4%) to compute terminal value.")
+
             st.markdown("**Terminal Value Formula:** Terminal FCF × (1 + g) / (WACC - g)")
             st.markdown(f"**Computed Terminal Value:** {currency} {terminal_value:,.2f}")
             st.markdown(f"**Discounted Terminal Value (PV):** {currency} {pv_terminal:,.2f}")
