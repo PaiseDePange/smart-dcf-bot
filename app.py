@@ -9,7 +9,7 @@ st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
 st.title("🤖 AI-Powered Stock Analysis")
 
-Utility functions
+# Utility functions
 
 def format_column_headers(headers): formatted = [] for h in headers: try: h_parsed = pd.to_datetime(h) formatted.append(h_parsed.strftime("%b-%Y")) except: formatted.append(str(h) if pd.notnull(h) else "") counts = Counter() unique = [] for h in formatted: counts[h] += 1 unique.append(f"{h}_{counts[h]}" if counts[h] > 1 else h) return unique
 
