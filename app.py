@@ -80,10 +80,7 @@ with tabs[0]:
 
     if st.session_state.get("data_imported"):
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
-
-        # Display latest calculated EBIT and margin after they are defined
         st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5)
-
         df = st.session_state["annual_pl"].copy()
         df = df.set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
@@ -98,15 +95,9 @@ with tabs[0]:
                 - df.loc.get("Selling and admin", 0)
                 - df.loc.get("Other Expenses", 0)
             )
-            common_index = ebit_calc_row.dropna().index.intersection(revenue_row.dropna().index)
-            if not common_index.empty:
-                latest_col = common_index[-1]
-                calculated_ebit = ebit_calc_row[latest_col]
-                latest_revenue = revenue_row[latest_col]
-                calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
-            else:
-                calculated_ebit = None
-                calculated_ebit_margin = None
+            calculated_ebit = ebit_calc_row[-1]
+            latest_revenue = revenue_row[-1]
+            calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
         except:
             calculated_ebit = None
             calculated_ebit_margin = None
