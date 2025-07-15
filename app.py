@@ -7,13 +7,58 @@ st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
 st.title("🤖 AI-Powered Stock Analysis")
 
-# Tabs for DCF and EPS
-tabs = st.tabs(["💰 DCF Valuation", "📈 EPS Projection"])
+# Utility functions
+def format_column_headers(headers):
+    formatted = []
+    for h in headers:
+        try:
+            h_parsed = pd.to_datetime(h)
+            formatted.append(h_parsed.strftime("%b-%Y"))
+        except:
+            formatted.append(h)
+    return formatted
 
-# --- DCF TAB ---
+def extract_table(df, start_label, header_offset=-1, col_count=11):
+    start_row = df[df.iloc[:, 0] == start_label].index[0]
+    header_row = start_row + header_offset
+    headers_raw = df.iloc[header_row, 1:col_count].tolist()
+    headers = format_column_headers(headers_raw)
+    column_names = ["Report Date"] + headers
+
+    data_rows = []
+    for i in range(start_row, df.shape[0]):
+        row = df.iloc[i, 0:col_count]
+        if row.isnull().all():
+            break
+        data_rows.append(row.tolist())
+
+    return pd.DataFrame(data_rows, columns=column_names)
+
+def extract_quarterly(df):
+    quarters_row = df[df.iloc[:, 0] == "Quarters"].index[0]
+    report_date_row = quarters_row + 1
+    date_headers_raw = df.iloc[report_date_row, 1:11].tolist()
+    date_headers = format_column_headers(date_headers_raw)
+    column_headers = ["Report Date"] + date_headers
+
+    data_rows = []
+    for i in range(report_date_row + 1, df.shape[0]):
+        row = df.iloc[i, 0:11]
+        if row.isnull().all():
+            break
+        data_rows.append(row.tolist())
+
+    return pd.DataFrame(data_rows, columns=column_headers)
+
+# Tabs for entire app
+tabs = st.tabs(["📥 Inputs", "💰 DCF Valuation", "📈 EPS Projection", "🧾 Data Checks"])
+
+# --- INPUT TAB ---
 with tabs[0]:
-    st.header("📥 DCF Input Assumptions")
+    st.header("Upload Excel File for EPS Projection")
+    uploaded_file = st.file_uploader("Upload Screener Excel file", type=["xlsx"])
 
+    st.header("📥 DCF Input Assumptions")
     col1, col2 = st.columns(2)
 
     with col1:
@@ -32,6 +77,18 @@ with tabs[0]:
         terminal_growth = st.number_input("Terminal Growth Rate (%)", value=4.0)
         net_debt = st.number_input("Net Debt (Cash - Debt)", value=0.0)
         shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
+
+    if uploaded_file:
+        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None)
+        st.session_state["annual_pl"] = extract_table(df_all, "Sales")
+        st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
+        st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
+        st.session_state["quarterly"] = extract_quarterly(df_all)
+        st.success("✅ Data Imported Successfully! Please check 'Data Checks' tab for extracted tables.")
+
+# --- DCF TAB ---
+with tabs[1]:
+    st.header("💰 DCF Valuation")
 
     if st.button("💰 Calculate DCF"):
         st.subheader("📊 Projected Free Cash Flows")
@@ -96,7 +153,7 @@ with tabs[0]:
         st.dataframe(sensitivity_df.style.format("{:.2f}"))
 
 # --- EPS TAB ---
-with tabs[1]:
+with tabs[2]:
     st.header("📈 EPS Projection Model")
 
     base_eps = st.number_input("Base Year EPS", value=50.0)
@@ -110,3 +167,22 @@ with tabs[1]:
 
     eps_df = pd.DataFrame(eps_data, columns=["Year", "Projected EPS"])
     st.dataframe(eps_df)
+
+# --- DATA CHECK TAB ---
+with tabs[3]:
+    st.header("🧾 Extracted Data Checks")
+
+    if "annual_pl" in st.session_state:
+        st.subheader("📊 Annual P&L")
+        st.dataframe(st.session_state["annual_pl"])
+
+        st.subheader("📋 Balance Sheet")
+        st.dataframe(st.session_state["balance_sheet"])
+
+        st.subheader("💸 Cash Flow")
+        st.dataframe(st.session_state["cashflow"])
+
+        st.subheader("📆 Quarterly P&L")
+        st.dataframe(st.session_state["quarterly"])
+    else:
+        st.info("Please upload a valid Excel file in the Inputs tab to load data.")
