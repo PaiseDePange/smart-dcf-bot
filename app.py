@@ -91,7 +91,7 @@ with tabs[0]:
         revenue_row = df.loc["Sales"].dropna()
         try:
             ebit_calc_row = (
-                df.loc["Sales"]
+                df.loc.get["Sales",0]
                 - df.loc.get("Raw Material Cost", 0)
                 - df.loc.get("Change in Inventory", 0)
                 - df.loc.get("Power and Fuel", 0)
