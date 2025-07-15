@@ -33,7 +33,7 @@ def format_column_headers(headers):
         unique.append(f"{h}_{counts[h]}" if counts[h] > 1 else h)
     return unique
 
-def extract_table(df, start_label,, col_count=11):
+def extract_table(df, start_label, col_count=11):
     start_row = df[df.iloc[:, 0] == start_label].index[1]
     header_row = start_row 
     headers_raw = df.iloc[header_row, 0:col_count].tolist()
