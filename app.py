@@ -202,7 +202,7 @@ with tabs[2]:
         growth_rate = st.session_state["user_growth_rate"]
 
         eps_projection = []
-                ebit_0 = base_revenue * (ebit_margin / 100)
+        ebit_0 = base_revenue * (ebit_margin / 100)
         dep_0 = base_revenue * (depreciation_pct / 100)
         capex_0 = base_revenue * (capex_pct / 100)
         interest_0 = base_revenue * (interest_pct / 100)
