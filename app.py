@@ -56,75 +56,25 @@ def extract_quarterly(df):
 # Tabs for entire app
 tabs = st.tabs(["📥 Inputs", "💰 DCF Valuation", "📈 EPS Projection", "🧾 Data Checks"])
 
-# --- EPS TAB ---
-with tabs[2]:
-    if st.session_state.get("company_name"):
-        st.subheader(f"🏢 Company: {st.session_state['company_name']}")
-    st.header("📈 EPS Projection")
+# --- INPUT TAB ---
+with tabs[0]:
+    st.header("📥 Inputs")
+    uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
 
-    if st.session_state.get("data_imported"):
-        if st.button("📊 Calculate EPS Projection"):
-            df = st.session_state["annual_pl"].copy()
-            df = df.set_index("Report Date")
-            revenue_row = df.loc["Sales"].dropna()
-            revenue_values = revenue_row.values.astype(float)
-            base_revenue = revenue_values[-1]
-
-            eps_projection = []
-            revenue = base_revenue
-            shares = st.session_state.get("shares_outstanding", 10.0)
-            ebit_margin = st.session_state.get("ebit_margin", 20.0)
-            depreciation_pct = st.session_state.get("depreciation_pct", 5.0)
-            interest_pct = st.session_state.get("interest_pct", 10.0)
-            tax_rate = st.session_state.get("tax_rate", 25.0)
-            forecast_years = st.session_state.get("forecast_years", 5)
-            growth_rate = st.session_state.get("user_growth_rate", 10.0)
-
-            for year in range(1, forecast_years + 1):
-                revenue *= (1 + growth_rate / 100)
-                ebit = revenue * (ebit_margin / 100)
-                depreciation = revenue * (depreciation_pct / 100)
-                interest = revenue * (interest_pct / 100)
-                pbt = ebit - interest
-                tax = pbt * (tax_rate / 100)
-                pat = pbt - tax
-                eps = pat / shares if shares else 0
-                eps_projection.append({
-                    "Year": f"Year {year}",
-                    "Revenue": round(revenue, 2),
-                    "EBIT": round(ebit, 2),
-                    "Depreciation": round(depreciation, 2),
-                    "Interest": round(interest, 2),
-                    "PBT": round(pbt, 2),
-                    "Tax": round(tax, 2),
-                    "PAT": round(pat, 2),
-                    "EPS": round(eps, 2)
-                })
-
-            eps_df = pd.DataFrame(eps_projection)
-            st.subheader("📋 Year-wise EPS Projection Table")
-            st.dataframe(eps_df)
-
-            st.markdown("---")
-            st.markdown("**Methodology:**\n- Revenue is projected using user-defined growth rate.\n- EBIT is calculated from revenue and EBIT margin.\n- Depreciation and interest as % of revenue.\n- EPS = PAT / Shares Outstanding.")
-
-# --- DATA CHECK TAB ---
-with tabs[3]:
-    if st.session_state.get("company_name"):
-        st.subheader(f"🏢 Company: {st.session_state['company_name']}")
-    st.header("🧾 Extracted Data Checks")
-
-    if all(k in st.session_state for k in ["annual_pl", "balance_sheet", "cashflow", "quarterly"]):
-        st.subheader("📊 Annual P&L")
-        st.dataframe(st.session_state["annual_pl"])
-
-        st.subheader("📋 Balance Sheet")
-        st.dataframe(st.session_state["balance_sheet"])
-
-        st.subheader("💸 Cash Flow")
-        st.dataframe(st.session_state["cashflow"])
-
-        st.subheader("📆 Quarterly P&L")
-        st.dataframe(st.session_state["quarterly"])
-    else:
-        st.info("Please import a valid Excel file in the Inputs tab and click 'Import Data' to load tables.")
+    if uploaded_file and st.button("📥 Import Data"):
+        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
+        st.session_state["company_name"] = df_all.iloc[0, 1] if pd.notna(df_all.iloc[0, 1]) else "Unknown Company"
+        st.session_state["annual_pl"] = extract_table(df_all, "Sales")
+        st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
+        st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
+        st.session_state["quarterly"] = extract_quarterly(df_all)
+        st.session_state["data_imported"] = True
+        st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5)
+        st.session_state["currency"] = st.selectbox("Currency", ["INR", "USD", "EUR", "GBP"])
+        st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=20.0)
+        st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=5.0)
+        st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0)
+        st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value=25.0)
+        st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
+        st.session_state["user_growth_rate"] = st.number_input("Revenue Growth Rate for Projection (%)", value=10.0)
+        st.success("✅ Data Imported Successfully")
