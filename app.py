@@ -172,9 +172,9 @@ with tabs[1]:
         depreciation = base_revenue * (depreciation_pct / 100)
         fcf_data.append(["Year 0", base_revenue, nopat, depreciation, 0, 0, 0, 0])
         for year in range(1, forecast_years + 1):
-            if year <=2 
+            if year <=2 :
                 revenue = revenue * (1 + growth_rate_1_2 / 100)
-            else if year>2 1 and year <=52 
+            else if year>2 1 and year <=52 :
                 revenue = revenue * (1 + growth_rate_3_4_5 / 100)
             else
                 revenue = revenue * (1 + growth_rate_6 / 100)
