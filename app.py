@@ -88,6 +88,7 @@ with tabs[0]:
         ebit_margin = st.number_input("EBIT Margin (%)", value=20.0)
         depreciation_pct = st.number_input("Depreciation (% of Revenue)", value=5.0)
         capex_pct = st.number_input("CapEx (% of Revenue)", value=6.0)
+        eps_base = st.number_input("Base Year EPS", value=50.0)
 
     with col2:
         wc_change_pct = st.number_input("Change in Working Capital (% of Revenue)", value=1.0)
@@ -96,6 +97,25 @@ with tabs[0]:
         terminal_growth = st.number_input("Terminal Growth Rate (%)", value=4.0)
         net_debt = st.number_input("Net Debt (Cash - Debt)", value=0.0)
         shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
+        eps_growth = st.number_input("EPS Growth Rate (%)", value=12.0)
+
+# --- EPS TAB ---
+with tabs[2]:
+    st.header("📈 EPS Projection Model")
+
+    if st.button("📊 Calculate EPS Projection"):
+        eps_list = []
+        eps = eps_base
+        for year in range(1, forecast_years + 1):
+            eps *= (1 + eps_growth / 100)
+            eps_list.append((f"Year {year}", round(eps, 2)))
+
+        eps_df = pd.DataFrame(eps_list, columns=["Year", "Projected EPS"])
+        st.subheader("Projected EPS Over Forecast Period")
+        st.dataframe(eps_df)
+
+        st.markdown("---")
+        st.markdown("**Methodology:** EPS is projected using compound growth over the forecast period. Each year's EPS = Previous EPS × (1 + Growth Rate %).")
 
 # --- DATA CHECK TAB ---
 with tabs[3]:
