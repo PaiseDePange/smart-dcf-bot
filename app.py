@@ -189,7 +189,7 @@ with tabs[1]:
             nopat = ebit - tax
             
             capex = revenue * (capex_pct / 100)
-            wc_change = revenue * wc_change_pct
+            wc_change = revenue * wc_change_pct/100
             fcf = nopat + depreciation - capex - wc_change
             pv_fcf = fcf / discount_factors[year - 1]
             fcf_data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf, pv_fcf])
