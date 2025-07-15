@@ -72,7 +72,7 @@ with tabs[0]:
     if uploaded_file and st.button("📥 Import Data"):
         df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
         st.session_state["company_name"] = df_all.iloc[0, 1] if pd.notna(df_all.iloc[0, 1]) else "Unknown Company"
-        st.session_state["annual_pl"] = extract_table(df_all, " PROFIT & LOSS")
+        st.session_state["annual_pl"] = extract_table(df_all, "PROFIT & LOSS")
         st.session_state["balance_sheet"] = extract_table(df_all, "BALANCE SHEET")
         st.session_state["cashflow"] = extract_table(df_all, "CASH FLOW:" )
         st.session_state["cashflow"] = extract_table(df_all, "Quarters" )
