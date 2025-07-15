@@ -202,16 +202,16 @@ with tabs[2]:
         growth_rate = st.session_state["user_growth_rate"]
 
         eps_projection = []
-        ebit_0 = base_revenue * (ebit_margin / 100)
-dep_0 = base_revenue * (depreciation_pct / 100)
-capex_0 = base_revenue * (capex_pct / 100)
-interest_0 = base_revenue * (interest_pct / 100)
-pbt_0 = ebit_0 - interest_0
-tax_0 = pbt_0 * (tax_rate / 100)
-pat_0 = pbt_0 - tax_0
-eps_0 = pat_0 / shares if shares else 0
+                ebit_0 = base_revenue * (ebit_margin / 100)
+        dep_0 = base_revenue * (depreciation_pct / 100)
+        capex_0 = base_revenue * (capex_pct / 100)
+        interest_0 = base_revenue * (interest_pct / 100)
+        pbt_0 = ebit_0 - interest_0
+        tax_0 = pbt_0 * (tax_rate / 100)
+        pat_0 = pbt_0 - tax_0
+        eps_0 = pat_0 / shares if shares else 0
 
-        eps_projection.append(["Year 0", base_revenue, ebit_0, dep_0, capex_0, interest_0, pbt_0, tax_0, pat_0, eps_0])
+(["Year 0", base_revenue, ebit_0, dep_0, capex_0, interest_0, pbt_0, tax_0, pat_0, eps_0])
         revenue = base_revenue
 
         for year in range(1, forecast_years + 1):
