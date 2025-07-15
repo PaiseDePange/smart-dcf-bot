@@ -107,7 +107,7 @@ with tabs[0]:
         st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0)
 
         tax_row = df.loc["Tax"] if "Tax" in df.index else None
-        calculated_tax_pct = round((tax_row.values[-1] / ebit_row.values[-1]) * 100, 2) if tax_row is not None and ebit_row is not None else None
+        calculated_tax_pct = round((tax_row.values[-1] / calculated_ebit) * 100, 2) if tax_row is not None and calculated_ebit is not None else None
         st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value=25.0, help=f"Last actual tax rate: {calculated_tax_pct}%" if calculated_tax_pct else "Tax not found in data")
 
         shares_row = st.session_state["balance_sheet"].copy()
