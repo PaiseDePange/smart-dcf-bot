@@ -60,7 +60,9 @@ tabs = st.tabs(["📥 Inputs", "💰 DCF Valuation", "📈 EPS Projection", "�
 with tabs[0]:
     st.header("📥 Inputs")
     uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
-    if uploaded_file and st.button("📥 Import Data"):
+    import_triggered = st.button("📥 Import Data")
+
+    if uploaded_file and import_triggered:
         df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
         st.session_state["company_name"] = df_all.iloc[0, 1] if pd.notna(df_all.iloc[0, 1]) else "Unknown Company"
         st.session_state["annual_pl"] = extract_table(df_all, "Sales")
@@ -69,3 +71,14 @@ with tabs[0]:
         st.session_state["quarterly"] = extract_quarterly(df_all)
         st.session_state["data_imported"] = True
         st.success("✅ Data Imported Successfully")
+
+    if st.session_state.get("data_imported"):
+        st.subheader("📊 Data Checks")
+        st.write("### Annual P&L")
+        st.dataframe(st.session_state["annual_pl"])
+        st.write("### Balance Sheet")
+        st.dataframe(st.session_state["balance_sheet"])
+        st.write("### Cash Flow")
+        st.dataframe(st.session_state["cashflow"])
+        st.write("### Quarterly P&L")
+        st.dataframe(st.session_state["quarterly"])
