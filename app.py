@@ -1,6 +1,9 @@
 # 🤖 Streamlit App for Sophisticated DCF Valuation and EPS Projection
 
-import streamlit as st import pandas as pd import numpy as np from collections import Counter
+import streamlit as st
+import pandas as pd
+import numpy as np 
+from collections import Counter
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
