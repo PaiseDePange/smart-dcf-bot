@@ -35,7 +35,7 @@ def format_column_headers(headers):
 
 def extract_table(df, start_label, col_count=11):
     start_row = df[df.iloc[:, 0] == start_label].index[0]
-    header_row = start_row 
+    header_row = start_row +1
     headers_raw = df.iloc[header_row, 0:col_count].tolist()
     headers = format_column_headers(headers_raw)
     column_names = headers
