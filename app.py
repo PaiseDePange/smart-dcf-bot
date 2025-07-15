@@ -45,7 +45,12 @@ def extract_table(df, start_label, col_count=11):
         if row.isnull().all():
             break
         data_rows.append(row.tolist())
-    return pd.DataFrame(data_rows, columns=column_names)
+    
+    # Remove columns where first row is blank
+    df_temp = pd.DataFrame(data_rows, columns=column_names)
+    df_temp = df_temp.loc[:, df_temp.iloc[0].notna()]
+    
+    return df_temp
 
 def extract_quarterly(df):
     quarters_row = df[df.iloc[:, 0] == "Quarters"].index[0]
