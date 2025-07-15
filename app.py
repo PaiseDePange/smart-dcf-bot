@@ -127,8 +127,7 @@ with tabs[1]:
         discount_factors = [(1 + interest_pct / 100) ** year for year in range(1, forecast_years + 1)]
         fcf_data = []
 
-        eps_projection.append(["Year 0", base_revenue, 0, 0, 0, 0, 0, 0, 0, 0])
-        fcf_data.append(["Year 0", base_revenue, 0, 0, 0, 0, 0, 0])
+                fcf_data.append(["Year 0", base_revenue, 0, 0, 0, 0, 0, 0])
         for year in range(1, forecast_years + 1):
             revenue *= (1 + growth_rate / 100)
             ebit = revenue * (ebit_margin / 100)
