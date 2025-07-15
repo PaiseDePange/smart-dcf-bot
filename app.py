@@ -72,13 +72,17 @@ with tabs[0]:
         st.session_state["data_imported"] = True
         st.success("✅ Data Imported Successfully")
 
+# --- DATA CHECK TAB ---
+with tabs[3]:
+    st.header("🧾 Data Checks")
     if st.session_state.get("data_imported"):
-        st.subheader("📊 Data Checks")
-        st.write("### Annual P&L")
+        st.subheader("📊 Annual P&L")
         st.dataframe(st.session_state["annual_pl"])
-        st.write("### Balance Sheet")
+        st.subheader("📋 Balance Sheet")
         st.dataframe(st.session_state["balance_sheet"])
-        st.write("### Cash Flow")
+        st.subheader("💸 Cash Flow")
         st.dataframe(st.session_state["cashflow"])
-        st.write("### Quarterly P&L")
+        st.subheader("📆 Quarterly P&L")
         st.dataframe(st.session_state["quarterly"])
+    else:
+        st.info("Please upload a file in the Inputs tab and click Import Data.")
