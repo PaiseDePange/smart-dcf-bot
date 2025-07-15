@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from collections import Counter
 
 st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
@@ -15,8 +16,14 @@ def format_column_headers(headers):
             h_parsed = pd.to_datetime(h)
             formatted.append(h_parsed.strftime("%b-%Y"))
         except:
-            formatted.append(h)
-    return formatted
+            formatted.append(str(h) if pd.notnull(h) else "")
+    # Make column names unique
+    counts = Counter()
+    unique = []
+    for h in formatted:
+        counts[h] += 1
+        unique.append(f"{h}_{counts[h]}" if counts[h] > 1 else h)
+    return unique
 
 def extract_table(df, start_label, header_offset=-1, col_count=11):
     start_row = df[df.iloc[:, 0] == start_label].index[0]
@@ -79,110 +86,9 @@ with tabs[0]:
         shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
 
     if uploaded_file:
-        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None)
+        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
         st.session_state["annual_pl"] = extract_table(df_all, "Sales")
         st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
         st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
         st.session_state["quarterly"] = extract_quarterly(df_all)
         st.success("✅ Data Imported Successfully! Please check 'Data Checks' tab for extracted tables.")
-
-# --- DCF TAB ---
-with tabs[1]:
-    st.header("💰 DCF Valuation")
-
-    if st.button("💰 Calculate DCF"):
-        st.subheader("📊 Projected Free Cash Flows")
-
-        revenue = base_revenue
-        data = []
-        discount_factors = [(1 + wacc / 100) ** year for year in range(1, forecast_years + 1)]
-        for year in range(1, forecast_years + 1):
-            revenue *= (1 + revenue_growth / 100)
-            ebit = revenue * (ebit_margin / 100)
-            tax = ebit * (tax_rate / 100)
-            nopat = ebit - tax
-            depreciation = revenue * (depreciation_pct / 100)
-            capex = revenue * (capex_pct / 100)
-            wc_change = revenue * (wc_change_pct / 100)
-            fcf = nopat + depreciation - capex - wc_change
-            pv_fcf = fcf / discount_factors[year - 1]
-            data.append([f"Year {year}", round(revenue, 2), round(nopat, 2), round(depreciation, 2), round(capex, 2), round(wc_change, 2), round(fcf, 2), round(pv_fcf, 2)])
-
-        df = pd.DataFrame(data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
-        st.dataframe(df)
-
-        st.subheader("📉 Terminal Value Calculation")
-        final_fcf = data[-1][-2]
-        terminal_value = (final_fcf * (1 + terminal_growth / 100)) / (wacc / 100 - terminal_growth / 100)
-        pv_terminal = terminal_value / discount_factors[-1]
-        st.markdown(f"**Terminal Value Formula:** Terminal FCF × (1 + g) / (WACC - g)")
-        st.markdown(f"**Computed Terminal Value:** {currency} {terminal_value:,.2f}")
-        st.markdown(f"**Discounted Terminal Value (PV):** {currency} {pv_terminal:,.2f}")
-
-        st.subheader("🧮 Present Value Summary")
-        total_pv_fcf = sum([row[-1] for row in data])
-        enterprise_value = total_pv_fcf + pv_terminal
-        equity_value = enterprise_value - net_debt
-        fair_value_per_share = equity_value / shares_outstanding
-
-        st.markdown(f"**Sum of PV of Free Cash Flows (Years 1-{forecast_years}):** {currency} {total_pv_fcf:,.2f}")
-        st.markdown(f"**Enterprise Value (FCF + Terminal):** {currency} {enterprise_value:,.2f}")
-        st.markdown(f"**Equity Value (Enterprise - Net Debt):** {currency} {equity_value:,.2f}")
-        st.success(f"🎯 Fair Value per Share: {currency} {fair_value_per_share:,.2f}")
-
-        st.subheader("📊 Sensitivity Analysis")
-        wacc_range = np.arange(wacc - 2, wacc + 3, 1)
-        growth_range = np.arange(terminal_growth - 1, terminal_growth + 2, 0.5)
-        sensitivity_data = []
-
-        for g in growth_range:
-            row = []
-            for w in wacc_range:
-                try:
-                    term_val = (final_fcf * (1 + g / 100)) / ((w / 100) - (g / 100))
-                    term_pv = term_val / ((1 + w / 100) ** forecast_years)
-                    total_pv = total_pv_fcf + term_pv
-                    equity_val = total_pv - net_debt
-                    fair_val = equity_val / shares_outstanding
-                    row.append(round(fair_val, 2))
-                except:
-                    row.append("-")
-            sensitivity_data.append(row)
-
-        sensitivity_df = pd.DataFrame(sensitivity_data, columns=[f"WACC {w:.1f}%" for w in wacc_range], index=[f"g {g:.1f}%" for g in growth_range])
-        st.dataframe(sensitivity_df.style.format("{:.2f}"))
-
-# --- EPS TAB ---
-with tabs[2]:
-    st.header("📈 EPS Projection Model")
-
-    base_eps = st.number_input("Base Year EPS", value=50.0)
-    eps_growth = st.number_input("EPS Growth Rate (%)", value=12.0)
-    years = st.number_input("Projection Years", min_value=1, max_value=15, value=5)
-
-    eps_data = []
-    for year in range(1, years + 1):
-        base_eps *= (1 + eps_growth / 100)
-        eps_data.append((f"Year {year}", round(base_eps, 2)))
-
-    eps_df = pd.DataFrame(eps_data, columns=["Year", "Projected EPS"])
-    st.dataframe(eps_df)
-
-# --- DATA CHECK TAB ---
-with tabs[3]:
-    st.header("🧾 Extracted Data Checks")
-
-    if "annual_pl" in st.session_state:
-        st.subheader("📊 Annual P&L")
-        st.dataframe(st.session_state["annual_pl"])
-
-        st.subheader("📋 Balance Sheet")
-        st.dataframe(st.session_state["balance_sheet"])
-
-        st.subheader("💸 Cash Flow")
-        st.dataframe(st.session_state["cashflow"])
-
-        st.subheader("📆 Quarterly P&L")
-        st.dataframe(st.session_state["quarterly"])
-    else:
-        st.info("Please upload a valid Excel file in the Inputs tab to load data.")
