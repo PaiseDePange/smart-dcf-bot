@@ -44,50 +44,37 @@ if st.session_state.get("data_imported"):
 
 --- EPS TAB ---
 
-with tabs[2]: if st.session_state.get("data_imported") and st.button("📊 Calculate EPS Projection"): df = st.session_state["annual_pl"].copy() df = df.set_index("Report Date") revenue_row = df.loc["Sales"].dropna() revenue_values = revenue_row.values.astype(float) base_revenue = revenue_values[-1] forecast_years = st.session_state["forecast_years"] ebit_margin = st.session_state["ebit_margin"] depreciation_pct = st.session_state["depreciation_pct"] interest_pct = st.session_state["interest_pct"] tax_rate = st.session_state["tax_rate"] shares = st.session_state["shares_outstanding"] growth_rate = st.session_state["user_growth_rate"]
+with tabs[2]: st.header("📈 EPS Projection") if st.session_state.get("data_imported"): if st.button("📊 Calculate EPS Projection"): df = st.session_state["annual_pl"].copy() df = df.set_index("Report Date") revenue_row = df.loc["Sales"].dropna() revenue_values = revenue_row.values.astype(float) base_revenue = revenue_values[-1] forecast_years = st.session_state["forecast_years"] ebit_margin = st.session_state["ebit_margin"] depreciation_pct = st.session_state["depreciation_pct"] interest_pct = st.session_state["interest_pct"] tax_rate = st.session_state["tax_rate"] shares = st.session_state["shares_outstanding"] growth_rate = st.session_state["user_growth_rate"]
 
 eps_projection = []
-    revenue = base_revenue
+        revenue = base_revenue
 
-    for year in range(1, forecast_years + 1):
-        revenue *= (1 + growth_rate / 100)
-        ebit = revenue * (ebit_margin / 100)
-        depreciation = revenue * (depreciation_pct / 100)
-        interest = revenue * (interest_pct / 100)
-        pbt = ebit - interest
-        tax = pbt * (tax_rate / 100)
-        pat = pbt - tax
-        eps = pat / shares if shares else 0
-        eps_projection.append({
-            "Year": f"Year {year}",
-            "Revenue": round(revenue, 2),
-            "EBIT": round(ebit, 2),
-            "Depreciation": round(depreciation, 2),
-            "Interest": round(interest, 2),
-            "PBT": round(pbt, 2),
-            "Tax": round(tax, 2),
-            "PAT": round(pat, 2),
-            "EPS": round(eps, 2)
-        })
+        for year in range(1, forecast_years + 1):
+            revenue *= (1 + growth_rate / 100)
+            ebit = revenue * (ebit_margin / 100)
+            depreciation = revenue * (depreciation_pct / 100)
+            interest = revenue * (interest_pct / 100)
+            pbt = ebit - interest
+            tax = pbt * (tax_rate / 100)
+            pat = pbt - tax
+            eps = pat / shares if shares else 0
+            eps_projection.append({
+                "Year": f"Year {year}",
+                "Revenue": round(revenue, 2),
+                "EBIT": round(ebit, 2),
+                "Depreciation": round(depreciation, 2),
+                "Interest": round(interest, 2),
+                "PBT": round(pbt, 2),
+                "Tax": round(tax, 2),
+                "PAT": round(pat, 2),
+                "EPS": round(eps, 2)
+            })
 
-    eps_df = pd.DataFrame(eps_projection)
-    st.subheader("📋 Year-wise EPS Projection Table")
-    st.dataframe(eps_df)
-    st.markdown("---")
-    st.markdown("**Methodology:**\n- Revenue projected using defined growth.\n- EBIT from EBIT margin.\n- EPS from PAT / Shares Outstanding.")
-
---- DATA CHECK TAB ---
-
-with tabs[3]: if st.session_state.get("data_imported"): st.subheader("📊 Annual P&L") st.dataframe(st.session_state["annual_pl"])
-
-st.subheader("📋 Balance Sheet")
-    st.dataframe(st.session_state["balance_sheet"])
-
-    st.subheader("💸 Cash Flow")
-    st.dataframe(st.session_state["cashflow"])
-
-    st.subheader("📆 Quarterly P&L")
-    st.dataframe(st.session_state["quarterly"])
+        eps_df = pd.DataFrame(eps_projection)
+        st.subheader("📋 Year-wise EPS Projection Table")
+        st.dataframe(eps_df)
+        st.markdown("---")
+        st.markdown("**Methodology:**\n- Revenue projected using defined growth.\n- EBIT from EBIT margin.\n- EPS from PAT / Shares Outstanding.")
 else:
-    st.info("Please upload and import a file to view extracted tables.")
+    st.warning("Please upload data in the Inputs tab to enable EPS projection.")
 
