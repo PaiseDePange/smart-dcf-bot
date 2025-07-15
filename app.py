@@ -99,13 +99,13 @@ with tabs[0]:
          
         try:
             calculated_ebit = revenue_row[-1]
-                                -raw_material_cost[-1]
-                                -inventory_cost[-1]
-                                -power_and_fule_cost[-1]
-                                -other_mfr_exp_cost[-1]
-                                -emp_cost[-1]
-                                -selling_and_admin_cost[-1]
-                                -other_expenses_cost[-1]
+                                - raw_material_cost[-1]
+                                - inventory_cost[-1]
+                                - power_and_fule_cost[-1]
+                                - other_mfr_exp_cost[-1]
+                                - emp_cost[-1]
+                                - selling_and_admin_cost[-1]
+                                - other_expenses_cost[-1]
             latest_revenue = revenue_row[-1]
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
         except:
