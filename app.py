@@ -176,7 +176,7 @@ with tabs[1]:
                 revenue = revenue * (1 + growth_rate_1_2 / 100)
             elif year>2 and year <=5 :
                 revenue = revenue * (1 + growth_rate_3_4_5 / 100)
-            else
+            else :
                 revenue = revenue * (1 + growth_rate_6 / 100)
             
             ebit = revenue * (ebit_margin / 100)
