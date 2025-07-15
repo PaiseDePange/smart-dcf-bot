@@ -238,69 +238,6 @@ with tabs[1]:
             sensitivity.append({"Growth Rate (%)": g, "Fair Value/Share": round(fair_val, 2)})
         st.dataframe(pd.DataFrame(sensitivity))
 
-# --- EPS TAB ---
-with tabs[2]:
-    st.header("📈 EPS Projection")
-
-    if st.session_state.get("data_imported"):
-        st.subheader("📌 Assumptions Used")
-        st.markdown(f"- **EBIT Margin:** {st.session_state['ebit_margin']}%")
-        st.markdown(f"- **Depreciation (% of Revenue):** {st.session_state['depreciation_pct']}%")
-        st.markdown(f"- **CapEx (% of Revenue):** {st.session_state['capex_pct']}%")
-        st.markdown(f"- **Interest (% of Revenue):** {st.session_state['interest_pct']}%")
-        st.markdown(f"- **Tax Rate:** {st.session_state['tax_rate']}%")
-        st.markdown(f"- **Growth Rate:** {st.session_state['user_growth_rate']}%")
-        st.markdown("### 🧮 Key Calculation Formulas")
-        st.markdown("- **EBIT** = Revenue × EBIT Margin")
-        st.markdown("- **Depreciation/CapEx/Interest** = Revenue × respective %")
-        st.markdown("- **PBT** = EBIT - Interest")
-        st.markdown("- **Tax** = PBT × Tax Rate")
-        st.markdown("- **PAT** = PBT - Tax")
-        st.markdown("- **EPS** = PAT / Shares Outstanding")
-    if st.session_state.get("data_imported") and st.button("📊 Calculate EPS Projection"):
-        df = st.session_state["annual_pl"].copy()
-        df = df.set_index("Report Date")
-        revenue_row = df.loc["Sales"].dropna()
-        revenue_values = revenue_row.values.astype(float)
-        base_revenue = revenue_values[-1]
-        forecast_years = st.session_state["forecast_years"]
-        ebit_margin = st.session_state["ebit_margin"]
-        depreciation_pct = st.session_state["depreciation_pct"]
-        capex_pct = st.session_state["capex_pct"]
-        interest_pct = st.session_state["interest_pct"]
-        tax_rate = st.session_state["tax_rate"]
-        shares = st.session_state["shares_outstanding"]
-        growth_rate = st.session_state["user_growth_rate"]
-
-        eps_projection = []
-        ebit_0 = base_revenue * (ebit_margin / 100)
-        dep_0 = base_revenue * (depreciation_pct / 100)
-        capex_0 = base_revenue * (capex_pct / 100)
-        interest_0 = base_revenue * (interest_pct / 100)
-        pbt_0 = ebit_0 - interest_0
-        tax_0 = pbt_0 * (tax_rate / 100)
-        pat_0 = pbt_0 - tax_0
-        eps_0 = pat_0 / shares if shares else 0
-        eps_projection.append(["Year 0", base_revenue, ebit_0, dep_0, capex_0, interest_0, pbt_0, tax_0, pat_0, eps_0])
-        revenue = base_revenue
-
-        for year in range(1, forecast_years + 1):
-            revenue *= (1 + growth_rate / 100)
-            ebit = revenue * (ebit_margin / 100)
-            depreciation = revenue * (depreciation_pct / 100)
-            capex = revenue * (capex_pct / 100)
-            interest = revenue * (interest_pct / 100)
-            pbt = ebit - interest
-            tax = pbt * (tax_rate / 100)
-            pat = pbt - tax
-            eps = pat / shares if shares else 0
-            eps_projection.append([f"Year {year}", revenue, ebit, depreciation, capex, interest, pbt, tax, pat, eps])
-
-        eps_df = pd.DataFrame(eps_projection, columns=["Year", "Revenue", "EBIT", "Depreciation", "CapEx", "Interest", "PBT", "Tax", "PAT", "EPS"])
-        st.dataframe(eps_df.style.format({
-            "Revenue": "{:.2f}", "EBIT": "{:.2f}", "Depreciation": "{:.2f}", "CapEx": "{:.2f}",
-            "Interest": "{:.2f}", "PBT": "{:.2f}", "Tax": "{:.2f}", "PAT": "{:.2f}", "EPS": "{:.2f}"
-        }))
 
 # --- DATA CHECK TAB ---
 with tabs[3]:
