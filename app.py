@@ -68,14 +68,14 @@ with tabs[0]:
     import_btn = st.button("📥 Import Data")
     if import_btn and uploaded_file:
         df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
-        st.session_state["company_name"] = df_all.iloc[1, 1] if pd.notna(df_all.iloc[1, 1]) else "Unknown Company"
+        st.session_state["company_name"] = df_all.iloc[0, 1] if pd.notna(df_all.iloc[0, 1]) else "Unknown Company"
         st.session_state["annual_pl"] = extract_table(df_all, "Sales")
         st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
         st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
         st.session_state["quarterly"] = extract_quarterly(df_all)
         st.session_state["data_imported"] = True
 
-    if "data_imported" in st.session_state:
+    if st.session_state.get("data_imported"):
         st.subheader(f"🏢 Company: {st.session_state['company_name']}")
         st.success("✅ Data Imported Successfully! Please check 'Data Checks' tab for extracted tables.")
 
@@ -95,7 +95,7 @@ with tabs[0]:
 
 # --- DCF TAB ---
 with tabs[1]:
-    if "company_name" in st.session_state:
+    if st.session_state.get("company_name"):
         st.subheader(f"🏢 Company: {st.session_state['company_name']}")
 
     st.header("💰 DCF Valuation")
@@ -104,6 +104,11 @@ with tabs[1]:
         if "annual_pl" not in st.session_state:
             st.error("❌ Please upload data first from the Inputs tab.")
         else:
+            st.markdown("### Assumptions")
+            st.markdown(f"- Forecast Period: **{forecast_years} years**")
+            st.markdown(f"- EBIT Margin: **{ebit_margin}%**, Depreciation: **{depreciation_pct}%**, Interest: **{interest_pct}%**")
+            st.markdown(f"- Tax Rate: **{tax_rate}%**, Shares Outstanding: **{shares_outstanding}**")
+
             df = st.session_state["annual_pl"].copy()
             df = df.set_index("Report Date")
             revenue_row = df.loc["Sales"].dropna()
@@ -148,3 +153,74 @@ with tabs[1]:
             st.markdown(f"**Enterprise Value (FCF + Terminal):** {currency} {enterprise_value:,.2f}")
             st.markdown(f"**Equity Value (Enterprise - Net Debt):** {currency} {equity_value:,.2f}")
             st.success(f"🎯 Fair Value per Share: {currency} {fair_value_per_share:,.2f}")
+
+# --- EPS TAB ---
+with tabs[2]:
+    if st.session_state.get("company_name"):
+        st.subheader(f"🏢 Company: {st.session_state['company_name']}")
+
+    st.header("📈 EPS Projection")
+
+    if st.session_state.get("data_imported"):
+        if st.button("📊 Calculate EPS Projection"):
+            df = st.session_state["annual_pl"].copy()
+            df = df.set_index("Report Date")
+            revenue_row = df.loc["Sales"].dropna()
+            revenue_values = revenue_row.values.astype(float)
+            base_revenue = revenue_values[-1]
+            growth_rate = ((revenue_values[-1] / revenue_values[-2]) - 1) * 100 if len(revenue_values) >= 2 else 10.0
+
+            eps_projection = []
+            revenue = base_revenue
+            shares = shares_outstanding
+
+            for year in range(1, forecast_years + 1):
+                revenue *= (1 + growth_rate / 100)
+                ebit = revenue * (ebit_margin / 100)
+                depreciation = revenue * (depreciation_pct / 100)
+                interest = revenue * (interest_pct / 100)
+                pbt = ebit - interest
+                tax = pbt * (tax_rate / 100)
+                pat = pbt - tax
+                eps = pat / shares if shares else 0
+
+                eps_projection.append({
+                    "Year": f"Year {year}",
+                    "Revenue": round(revenue, 2),
+                    "EBIT": round(ebit, 2),
+                    "Depreciation": round(depreciation, 2),
+                    "Interest": round(interest, 2),
+                    "PBT": round(pbt, 2),
+                    "Tax": round(tax, 2),
+                    "PAT": round(pat, 2),
+                    "EPS": round(eps, 2)
+                })
+
+            eps_df = pd.DataFrame(eps_projection)
+            st.subheader("📋 Year-wise EPS Projection Table")
+            st.dataframe(eps_df)
+
+            st.markdown("---")
+            st.markdown("**Methodology:**\n- Revenue is projected using historical CAGR.\n- EBIT is calculated from projected revenue and EBIT margin.\n- Depreciation and interest are estimated as % of revenue.\n- PBT and PAT are derived from EBIT and applied tax.\n- EPS = PAT / Shares Outstanding. Assumes no dilution.")
+
+# --- DATA CHECK TAB ---
+with tabs[3]:
+    if st.session_state.get("company_name"):
+        st.subheader(f"🏢 Company: {st.session_state['company_name']}")
+
+    st.header("🧾 Extracted Data Checks")
+
+    if all(k in st.session_state for k in ["annual_pl", "balance_sheet", "cashflow", "quarterly"]):
+        st.subheader("📊 Annual P&L")
+        st.dataframe(st.session_state["annual_pl"])
+
+        st.subheader("📋 Balance Sheet")
+        st.dataframe(st.session_state["balance_sheet"])
+
+        st.subheader("💸 Cash Flow")
+        st.dataframe(st.session_state["cashflow"])
+
+        st.subheader("📆 Quarterly P&L")
+        st.dataframe(st.session_state["quarterly"])
+    else:
+        st.info("Please import a valid Excel file in the Inputs tab and click 'Import Data' to load tables.")
