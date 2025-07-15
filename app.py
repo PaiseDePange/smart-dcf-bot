@@ -65,6 +65,18 @@ with tabs[0]:
     st.header("Upload Excel File for EPS Projection")
     uploaded_file = st.file_uploader("Upload Screener Excel file", type=["xlsx"])
 
+    import_btn = st.button("📥 Import Data")
+    if import_btn and uploaded_file:
+        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
+        st.session_state["annual_pl"] = extract_table(df_all, "Sales")
+        st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
+        st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
+        st.session_state["quarterly"] = extract_quarterly(df_all)
+        st.session_state["data_imported"] = True
+
+    if "data_imported" in st.session_state:
+        st.success("✅ Data Imported Successfully! Please check 'Data Checks' tab for extracted tables.")
+
     st.header("📥 DCF Input Assumptions")
     col1, col2 = st.columns(2)
 
@@ -85,10 +97,21 @@ with tabs[0]:
         net_debt = st.number_input("Net Debt (Cash - Debt)", value=0.0)
         shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
 
-    if uploaded_file:
-        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
-        st.session_state["annual_pl"] = extract_table(df_all, "Sales")
-        st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
-        st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
-        st.session_state["quarterly"] = extract_quarterly(df_all)
-        st.success("✅ Data Imported Successfully! Please check 'Data Checks' tab for extracted tables.")
+# --- DATA CHECK TAB ---
+with tabs[3]:
+    st.header("🧾 Extracted Data Checks")
+
+    if all(key in st.session_state for key in ["annual_pl", "balance_sheet", "cashflow", "quarterly"]):
+        st.subheader("📊 Annual P&L")
+        st.dataframe(st.session_state["annual_pl"])
+
+        st.subheader("📋 Balance Sheet")
+        st.dataframe(st.session_state["balance_sheet"])
+
+        st.subheader("💸 Cash Flow")
+        st.dataframe(st.session_state["cashflow"])
+
+        st.subheader("📆 Quarterly P&L")
+        st.dataframe(st.session_state["quarterly"])
+    else:
+        st.info("Please import a valid Excel file in the Inputs tab and click 'Import Data' to load tables.")
