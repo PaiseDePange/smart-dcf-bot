@@ -74,7 +74,7 @@ with tabs[0]:
         st.session_state["annual_pl"] = extract_table(df_all, "PROFIT & LOSS")
         st.session_state["balance_sheet"] = extract_table(df_all, "BALANCE SHEET")
         st.session_state["cashflow"] = extract_table(df_all, "CASH FLOW:" )
-        st.session_state["cashflow"] = extract_table(df_all, "Quarters" )
+        st.session_state["quarterly"] = extract_table(df_all, "Quarters" )
         #st.session_state["quarterly"] = extract_quarterly(df_all)
         st.session_state["data_imported"] = True
 
