@@ -219,8 +219,7 @@ with tabs[2]:
         st.markdown(f"- **Interest (% of Revenue):** {st.session_state['interest_pct']}%")
         st.markdown(f"- **Tax Rate:** {st.session_state['tax_rate']}%")
         st.markdown(f"- **Growth Rate:** {st.session_state['user_growth_rate']}%")
-        st.markdown("
-### 🧮 Key Calculation Formulas")
+        st.markdown("### 🧮 Key Calculation Formulas")
         st.markdown("- **EBIT** = Revenue × EBIT Margin")
         st.markdown("- **Depreciation/CapEx/Interest** = Revenue × respective %")
         st.markdown("- **PBT** = EBIT - Interest")
