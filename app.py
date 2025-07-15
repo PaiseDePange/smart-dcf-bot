@@ -107,7 +107,7 @@ with tabs[0]:
                                 - emp_cost[-1]
                                 - selling_and_admin_cost[-1]
                                 - other_expenses_cost[-1])
-            latest_revenue = revenue_row[-1])
+            latest_revenue = revenue_row[-1]
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
         except:
             calculated_ebit = None
