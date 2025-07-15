@@ -168,8 +168,10 @@ with tabs[1]:
 
         discount_factors = [(1 + interest_pct / 100) ** year for year in range(1, forecast_years + 1)]
         fcf_data = []
-        nopat = ebit - tax
+        ebit = base_revenue * (ebit_margin / 100)
         depreciation = base_revenue * (depreciation_pct / 100)
+        tax = (ebit -depreciation)* (tax_rate / 100)
+        nopat = ebit - tax
         fcf_data.append(["Year 0", base_revenue, nopat, depreciation, 0, 0, 0, 0])
         for year in range(1, forecast_years + 1):
             if year <=2 :
@@ -180,9 +182,12 @@ with tabs[1]:
                 revenue = revenue * (1 + growth_rate_6 / 100)
             
             ebit = revenue * (ebit_margin / 100)
-            tax = ebit * (tax_rate / 100)
-            nopat = ebit - tax
+            
             depreciation = revenue * (depreciation_pct / 100)
+            tax = (ebit -depreciation)* (tax_rate / 100)
+            
+            nopat = ebit - tax
+            
             capex = revenue * (capex_pct / 100)
             wc_change = revenue * wc_change_pct
             fcf = nopat + depreciation - capex - wc_change
