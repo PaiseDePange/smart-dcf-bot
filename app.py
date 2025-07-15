@@ -69,6 +69,9 @@ with tabs[0]:
         st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
         st.session_state["quarterly"] = extract_quarterly(df_all)
         st.session_state["data_imported"] = True
+
+    if st.session_state.get("data_imported"):
+        st.success("✅ Data Imported Successfully")
         st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5)
         st.session_state["currency"] = st.selectbox("Currency", ["INR", "USD", "EUR", "GBP"])
         st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=20.0)
@@ -77,4 +80,25 @@ with tabs[0]:
         st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value=25.0)
         st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
         st.session_state["user_growth_rate"] = st.number_input("Revenue Growth Rate for Projection (%)", value=10.0)
-        st.success("✅ Data Imported Successfully")
+
+# --- EPS TAB ---
+with tabs[2]:
+    if st.session_state.get("data_imported") and st.button("📊 Calculate EPS Projection"):
+        st.write("EPS Projection coming soon...")
+
+# --- DATA CHECK TAB ---
+with tabs[3]:
+    if st.session_state.get("data_imported"):
+        st.subheader("📊 Annual P&L")
+        st.dataframe(st.session_state["annual_pl"])
+
+        st.subheader("📋 Balance Sheet")
+        st.dataframe(st.session_state["balance_sheet"])
+
+        st.subheader("💸 Cash Flow")
+        st.dataframe(st.session_state["cashflow"])
+
+        st.subheader("📆 Quarterly P&L")
+        st.dataframe(st.session_state["quarterly"])
+    else:
+        st.info("Please upload and import a file to view extracted tables.")
