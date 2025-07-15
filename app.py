@@ -163,8 +163,8 @@ with tabs[1]:
         shares = st.session_state["shares_outstanding"]
         growth_rate_1_2 = st.session_state["user_growth_rate_yr_1_2"]
         growth_rate_3_4_5 = st.session_state["user_growth_rate_yr_3_4_5"]
-        growth_rate_6 =  st.session_state["terminal_growth"]
-        terminal_growth = st.session_state["terminal_growth"]
+        growth_rate_6 =  st.session_state["user_growth_rate_yr_6_onwards"]
+        terminal_growth = st.session_state["user_growth_rate_yr_6_onwards"]
 
         discount_factors = [(1 + interest_pct / 100) ** year for year in range(1, forecast_years + 1)]
         fcf_data = []
