@@ -89,18 +89,23 @@ with tabs[0]:
         df = st.session_state["annual_pl"].copy()
         df = df.set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
+        raw_material_cost = df.loc["Raw Material Cost"].dropna()
+        inventory_cost = df.loc["Change in Inventory"].dropna()
+        power_and_fule_cost = df.loc["Power and Fuel"].dropna()
+        other_mfr_exp_cost = df.loc["Other Mfr. Exp"].dropna()
+        emp_cost = df.loc["Employee Cost"].dropna()
+        selling_and_admin_cost = df.loc["Selling and admin"].dropna()
+        other_expenses_cost = df.loc["Other Expenses"].dropna()
+         
         try:
-            ebit_calc_row = (
-                df.loc.get["Sales",0]
-                - df.loc.get("Raw Material Cost", 0)
-                - df.loc.get("Change in Inventory", 0)
-                - df.loc.get("Power and Fuel", 0)
-                - df.loc.get("Other Mfr. Exp", 0)
-                - df.loc.get("Employee Cost", 0)
-                - df.loc.get("Selling and admin", 0)
-                - df.loc.get("Other Expenses", 0)
-            )
-            calculated_ebit = ebit_calc_row[-1]
+            calculated_ebit = revenue_row[-1]
+                                -raw_material_cost[-1]
+                                -inventory_cost[-1]
+                                -power_and_fule_cost[-1]
+                                -other_mfr_exp_cost[-1]
+                                -emp_cost[-1]
+                                -selling_and_admin_cost[-1]
+                                -other_expenses_cost[-1]
             latest_revenue = revenue_row[-1]
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
         except:
