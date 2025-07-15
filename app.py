@@ -68,6 +68,7 @@ with tabs[0]:
     import_btn = st.button("📥 Import Data")
     if import_btn and uploaded_file:
         df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
+        st.session_state["company_name"] = df_all.iloc[1, 1] if pd.notna(df_all.iloc[1, 1]) else "Unknown Company"
         st.session_state["annual_pl"] = extract_table(df_all, "Sales")
         st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
         st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
@@ -75,78 +76,75 @@ with tabs[0]:
         st.session_state["data_imported"] = True
 
     if "data_imported" in st.session_state:
+        st.subheader(f"🏢 Company: {st.session_state['company_name']}")
         st.success("✅ Data Imported Successfully! Please check 'Data Checks' tab for extracted tables.")
 
-    st.header("📥 DCF & EPS Input Assumptions")
+    st.header("📥 Projection Assumptions")
     col1, col2 = st.columns(2)
 
     with col1:
         forecast_years = st.number_input("Forecast Period (Years)", min_value=1, max_value=15, value=5)
         currency = st.selectbox("Currency", ["INR", "USD", "EUR", "GBP"])
-        base_revenue = st.number_input("Base Year Revenue (in Cr or M)", min_value=0.0, value=1000.0)
-        revenue_growth = st.number_input("Revenue Growth Rate (%)", value=10.0)
         ebit_margin = st.number_input("EBIT Margin (%)", value=20.0)
         depreciation_pct = st.number_input("Depreciation (% of Revenue)", value=5.0)
         interest_pct = st.number_input("Interest Expense (% of Revenue)", value=1.0)
-        eps_base = st.number_input("Base Year EPS", value=50.0)
 
     with col2:
         tax_rate = st.number_input("Corporate Tax Rate (%)", value=25.0)
         shares_outstanding = st.number_input("Shares Outstanding (in Cr or M)", value=10.0)
 
-# --- EPS TAB ---
-with tabs[2]:
-    st.header("📈 Sophisticated EPS Projection")
+# --- DCF TAB ---
+with tabs[1]:
+    if "company_name" in st.session_state:
+        st.subheader(f"🏢 Company: {st.session_state['company_name']}")
 
-    if st.button("📊 Calculate EPS Projection"):
-        eps_projection = []
-        revenue = base_revenue
-        shares = shares_outstanding
+    st.header("💰 DCF Valuation")
 
-        for year in range(1, forecast_years + 1):
-            revenue *= (1 + revenue_growth / 100)
-            ebit = revenue * (ebit_margin / 100)
-            depreciation = revenue * (depreciation_pct / 100)
-            interest = revenue * (interest_pct / 100)
-            pbt = ebit - interest
-            tax = pbt * (tax_rate / 100)
-            pat = pbt - tax
-            eps = pat / shares if shares else 0
+    if st.button("💰 Calculate DCF"):
+        if "annual_pl" not in st.session_state:
+            st.error("❌ Please upload data first from the Inputs tab.")
+        else:
+            df = st.session_state["annual_pl"].copy()
+            df = df.set_index("Report Date")
+            revenue_row = df.loc["Sales"].dropna()
+            revenue_values = revenue_row.values.astype(float)
+            base_revenue = revenue_values[-1]
+            growth_rate = ((revenue_values[-1] / revenue_values[-2]) - 1) * 100 if len(revenue_values) >= 2 else 10.0
 
-            eps_projection.append({
-                "Year": f"Year {year}",
-                "Revenue": round(revenue, 2),
-                "EBIT": round(ebit, 2),
-                "Depreciation": round(depreciation, 2),
-                "Interest": round(interest, 2),
-                "PBT": round(pbt, 2),
-                "Tax": round(tax, 2),
-                "PAT": round(pat, 2),
-                "EPS": round(eps, 2)
-            })
+            revenue = base_revenue
+            discount_factors = [(1 + interest_pct / 100) ** year for year in range(1, forecast_years + 1)]
+            fcf_data = []
 
-        eps_df = pd.DataFrame(eps_projection)
-        st.subheader("📋 Year-wise EPS Projection Table")
-        st.dataframe(eps_df)
+            for year in range(1, forecast_years + 1):
+                revenue *= (1 + growth_rate / 100)
+                ebit = revenue * (ebit_margin / 100)
+                tax = ebit * (tax_rate / 100)
+                nopat = ebit - tax
+                depreciation = revenue * (depreciation_pct / 100)
+                capex = revenue * (depreciation_pct / 100)
+                wc_change = revenue * 0.01  # assume 1% WC change
+                fcf = nopat + depreciation - capex - wc_change
+                pv_fcf = fcf / discount_factors[year - 1]
+                fcf_data.append([f"Year {year}", round(revenue, 2), round(nopat, 2), round(depreciation, 2), round(capex, 2), round(wc_change, 2), round(fcf, 2), round(pv_fcf, 2)])
 
-        st.markdown("---")
-        st.markdown("**Methodology:**\n- Revenue is projected using the provided growth rate.\n- EBIT is calculated from projected revenue and EBIT margin.\n- Depreciation and interest are estimated as % of revenue.\n- PBT and PAT are derived from EBIT and applied tax.\n- EPS = PAT / Shares Outstanding. Assumes no dilution.")
+            df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
+            st.dataframe(df_fcf)
 
-# --- DATA CHECK TAB ---
-with tabs[3]:
-    st.header("🧾 Extracted Data Checks")
+            st.subheader("📉 Terminal Value Calculation")
+            final_fcf = fcf_data[-1][-2]
+            terminal_value = (final_fcf * (1 + 4 / 100)) / (interest_pct / 100 - 4 / 100)
+            pv_terminal = terminal_value / discount_factors[-1]
+            st.markdown(f"**Terminal Value Formula:** Terminal FCF × (1 + g) / (WACC - g)")
+            st.markdown(f"**Computed Terminal Value:** {currency} {terminal_value:,.2f}")
+            st.markdown(f"**Discounted Terminal Value (PV):** {currency} {pv_terminal:,.2f}")
 
-    if all(key in st.session_state for key in ["annual_pl", "balance_sheet", "cashflow", "quarterly"]):
-        st.subheader("📊 Annual P&L")
-        st.dataframe(st.session_state["annual_pl"])
+            st.subheader("🧮 Present Value Summary")
+            total_pv_fcf = sum([row[-1] for row in fcf_data])
+            enterprise_value = total_pv_fcf + pv_terminal
+            equity_value = enterprise_value
+            fair_value_per_share = equity_value / shares_outstanding
 
-        st.subheader("📋 Balance Sheet")
-        st.dataframe(st.session_state["balance_sheet"])
-
-        st.subheader("💸 Cash Flow")
-        st.dataframe(st.session_state["cashflow"])
-
-        st.subheader("📆 Quarterly P&L")
-        st.dataframe(st.session_state["quarterly"])
-    else:
-        st.info("Please import a valid Excel file in the Inputs tab and click 'Import Data' to load tables.")
+            st.markdown(f"**Sum of PV of Free Cash Flows (Years 1-{forecast_years}):** {currency} {total_pv_fcf:,.2f}")
+            st.markdown(f"**Enterprise Value (FCF + Terminal):** {currency} {enterprise_value:,.2f}")
+            st.markdown(f"**Equity Value (Enterprise - Net Debt):** {currency} {equity_value:,.2f}")
+            st.success(f"🎯 Fair Value per Share: {currency} {fair_value_per_share:,.2f}")
