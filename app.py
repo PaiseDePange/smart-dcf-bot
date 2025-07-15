@@ -119,7 +119,15 @@ with tabs[1]:
             fcf_data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf, pv_fcf])
 
         df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
-        st.dataframe(df_fcf.style.format("{:.2f}"))
+        st.dataframe(df_fcf.style.format({
+    "Revenue": "{:.2f}",
+    "NOPAT": "{:.2f}",
+    "Depreciation": "{:.2f}",
+    "CapEx": "{:.2f}",
+    "Change in WC": "{:.2f}",
+    "Free Cash Flow": "{:.2f}",
+    "PV of FCF": "{:.2f}"
+}))
 
         final_fcf = fcf_data[-1][-2]
         terminal_value = (final_fcf * (1 + 0.04)) / ((interest_pct / 100) - 0.04)
@@ -169,4 +177,14 @@ with tabs[2]:
             eps_projection.append([f"Year {year}", revenue, ebit, depreciation, capex, interest, pbt, tax, pat, eps])
 
         eps_df = pd.DataFrame(eps_projection, columns=["Year", "Revenue", "EBIT", "Depreciation", "CapEx", "Interest", "PBT", "Tax", "PAT", "EPS"])
-        st.dataframe(eps_df.style.format("{:.2f}"))
+        st.dataframe(eps_df.style.format({
+    "Revenue": "{:.2f}",
+    "EBIT": "{:.2f}",
+    "Depreciation": "{:.2f}",
+    "CapEx": "{:.2f}",
+    "Interest": "{:.2f}",
+    "PBT": "{:.2f}",
+    "Tax": "{:.2f}",
+    "PAT": "{:.2f}",
+    "EPS": "{:.2f}"
+}))
