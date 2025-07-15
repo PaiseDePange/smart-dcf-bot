@@ -126,7 +126,8 @@ with tabs[0]:
         #calculated_capex_pct = round((capex_row.values[-1] / revenue_row.values[-1]) * 100, 2) if capex_row is not None else None
         st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=4.0, help=f"user need to update this")
 
-        st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0)
+        st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0, help=f"user need to update this")
+        st.session_state["wc_change_pct"] = st.number_input("Working Capital Changes as % of Revenue", value=2.0, help=f"user need to update this")
 
         tax_row = df.loc["Tax"] if "Tax" in df.index else None
         calculated_tax_pct = round((tax_row.values[-1] / calculated_ebit) * 100, 2) if tax_row is not None and calculated_ebit is not None else 0
@@ -157,22 +158,33 @@ with tabs[1]:
         depreciation_pct = st.session_state["depreciation_pct"]
         capex_pct = st.session_state["capex_pct"]
         interest_pct = st.session_state["interest_pct"]
+        wc_change_pct = st.session_state["wc_change_pct"]
         tax_rate = st.session_state["tax_rate"]
         shares = st.session_state["shares_outstanding"]
-        growth_rate = st.session_state["user_growth_rate"]
+        growth_rate_1_2 = st.session_state["user_growth_rate_yr_1_2"]
+        growth_rate_3_4_5 = st.session_state["user_growth_rate_yr_3_4_5"]
+        growth_rate_6 =  st.session_state["terminal_growth"]
         terminal_growth = st.session_state["terminal_growth"]
 
         discount_factors = [(1 + interest_pct / 100) ** year for year in range(1, forecast_years + 1)]
         fcf_data = []
-        fcf_data.append(["Year 0", base_revenue, 0, 0, 0, 0, 0, 0])
+        nopat = ebit - tax
+        depreciation = base_revenue * (depreciation_pct / 100)
+        fcf_data.append(["Year 0", base_revenue, nopat, depreciation, 0, 0, 0, 0])
         for year in range(1, forecast_years + 1):
-            revenue *= (1 + growth_rate / 100)
+            if year <=2 
+                revenue = revenue * (1 + growth_rate_1_2 / 100)
+            else if year>2 1 and year <=52 
+                revenue = revenue * (1 + growth_rate_3_4_5 / 100)
+            else
+                revenue = revenue * (1 + growth_rate_6 / 100)
+            
             ebit = revenue * (ebit_margin / 100)
             tax = ebit * (tax_rate / 100)
             nopat = ebit - tax
             depreciation = revenue * (depreciation_pct / 100)
             capex = revenue * (capex_pct / 100)
-            wc_change = revenue * 0.01
+            wc_change = revenue * wc_change_pct
             fcf = nopat + depreciation - capex - wc_change
             pv_fcf = fcf / discount_factors[year - 1]
             fcf_data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf, pv_fcf])
