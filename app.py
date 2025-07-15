@@ -56,74 +56,16 @@ def extract_quarterly(df):
 # Tabs for entire app
 tabs = st.tabs(["📥 Inputs", "💰 DCF Valuation", "📈 EPS Projection", "🧾 Data Checks"])
 
-# --- EPS TAB ---
-with tabs[2]:
-    st.header("📈 EPS Projection")
-    if st.session_state.get("data_imported"):
-        df = st.session_state["annual_pl"].copy()
-        df = df.set_index("Report Date")
-        revenue_row = df.loc["Sales"].dropna()
-        capex_row = df.loc["Capital Expenditures"].dropna() if "Capital Expenditures" in df.index else None
-        revenue_values = revenue_row.values.astype(float)
-        base_revenue = revenue_values[-1]
-        capex_values = capex_row.values.astype(float) if capex_row is not None else np.zeros_like(revenue_values)
-        avg_capex_pct = round(np.mean(capex_values / revenue_values * 100), 2) if revenue_values.size == capex_values.size and revenue_values.all() else 6.0
-
-        if "capex_pct" not in st.session_state:
-            st.session_state["capex_pct"] = avg_capex_pct
-
-        st.markdown("### Assumptions")
-        st.markdown(f"- Forecast Years: **{st.session_state['forecast_years']}**")
-        st.markdown(f"- Revenue Growth Rate: **{st.session_state['user_growth_rate']}%**")
-        st.markdown(f"- EBIT Margin: **{st.session_state['ebit_margin']}%**")
-        st.markdown(f"- Depreciation: **{st.session_state['depreciation_pct']}% of Revenue**")
-        st.markdown(f"- CapEx: **{st.session_state['capex_pct']}% of Revenue**  _(Based on past avg: {avg_capex_pct}%)_")
-        st.markdown(f"- WACC (used as Interest Proxy): **{st.session_state['interest_pct']}%**")
-        st.markdown(f"- Tax Rate: **{st.session_state['tax_rate']}%**")
-        st.markdown(f"- Shares Outstanding: **{st.session_state['shares_outstanding']}**")
-
-        st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=st.session_state["capex_pct"], key="capex_input")
-
-        if st.button("📊 Calculate EPS Projection"):
-            forecast_years = st.session_state["forecast_years"]
-            ebit_margin = st.session_state["ebit_margin"]
-            depreciation_pct = st.session_state["depreciation_pct"]
-            capex_pct = st.session_state["capex_pct"]
-            interest_pct = st.session_state["interest_pct"]
-            tax_rate = st.session_state["tax_rate"]
-            shares = st.session_state["shares_outstanding"]
-            growth_rate = st.session_state["user_growth_rate"]
-
-            eps_projection = []
-            revenue = base_revenue
-
-            for year in range(1, forecast_years + 1):
-                revenue *= (1 + growth_rate / 100)
-                ebit = revenue * (ebit_margin / 100)
-                depreciation = revenue * (depreciation_pct / 100)
-                capex = revenue * (capex_pct / 100)
-                interest = revenue * (interest_pct / 100)
-                pbt = ebit - interest
-                tax = pbt * (tax_rate / 100)
-                pat = pbt - tax
-                eps = pat / shares if shares else 0
-                eps_projection.append({
-                    "Year": f"Year {year}",
-                    "Revenue": round(revenue, 2),
-                    "EBIT": round(ebit, 2),
-                    "Depreciation": round(depreciation, 2),
-                    "CapEx": round(capex, 2),
-                    "Interest (approx)": round(interest, 2),
-                    "PBT": round(pbt, 2),
-                    "Tax": round(tax, 2),
-                    "PAT": round(pat, 2),
-                    "EPS": round(eps, 2)
-                })
-
-            eps_df = pd.DataFrame(eps_projection)
-            st.subheader("📋 Year-wise EPS Projection Table")
-            st.dataframe(eps_df)
-            st.markdown("---")
-            st.markdown("**Methodology:**\n- Revenue is projected using user-defined growth rate.\n- EBIT is calculated from projected revenue and EBIT margin.\n- Depreciation, CapEx, and interest are estimated as % of revenue.\n- PBT and PAT are derived from EBIT and applied tax.\n- EPS = PAT / Shares Outstanding. Assumes no dilution.")
-    else:
-        st.warning("Please upload data in the Inputs tab to enable EPS projection.")
+# --- INPUT TAB ---
+with tabs[0]:
+    st.header("📥 Inputs")
+    uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
+    if uploaded_file and st.button("📥 Import Data"):
+        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
+        st.session_state["company_name"] = df_all.iloc[0, 1] if pd.notna(df_all.iloc[0, 1]) else "Unknown Company"
+        st.session_state["annual_pl"] = extract_table(df_all, "Sales")
+        st.session_state["balance_sheet"] = extract_table(df_all, "Equity Share Capital")
+        st.session_state["cashflow"] = extract_table(df_all, "Cash from Operating Activity", header_offset=-1)
+        st.session_state["quarterly"] = extract_quarterly(df_all)
+        st.session_state["data_imported"] = True
+        st.success("✅ Data Imported Successfully")
