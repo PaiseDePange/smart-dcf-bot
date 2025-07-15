@@ -73,27 +73,33 @@ with tabs[0]:
     if st.session_state.get("data_imported"):
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
         st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5)
-        
+
         df = st.session_state["annual_pl"].copy()
-df = df.set_index("Report Date")
-revenue_row = df.loc["Sales"].dropna()
-ebit_row = df.loc["EBIT"] if "EBIT" in df.index else None
-calculated_ebit_margin = round((ebit_row.values[-1] / revenue_row.values[-1]) * 100, 2) if ebit_row is not None else None
-st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=20.0, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
+        df = df.set_index("Report Date")
+        revenue_row = df.loc["Sales"].dropna()
+        ebit_row = df.loc["EBIT"] if "EBIT" in df.index else None
+        calculated_ebit_margin = round((ebit_row.values[-1] / revenue_row.values[-1]) * 100, 2) if ebit_row is not None else None
+        st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=20.0, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
+
         depreciation_row = df.loc["Depreciation"] if "Depreciation" in df.index else None
-calculated_depr_pct = round((depreciation_row.values[-1] / revenue_row.values[-1]) * 100, 2) if depreciation_row is not None else None
-st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=5.0, help=f"Last actual depreciation ratio: {calculated_depr_pct}%" if calculated_depr_pct else "Depreciation not found in data")
+        calculated_depr_pct = round((depreciation_row.values[-1] / revenue_row.values[-1]) * 100, 2) if depreciation_row is not None else None
+        st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=5.0, help=f"Last actual depreciation ratio: {calculated_depr_pct}%" if calculated_depr_pct else "Depreciation not found in data")
+
         capex_row = df.loc["Capital Expenditures"] if "Capital Expenditures" in df.index else None
-calculated_capex_pct = round((capex_row.values[-1] / revenue_row.values[-1]) * 100, 2) if capex_row is not None else None
-st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=6.0, help=f"Last actual CapEx ratio: {calculated_capex_pct}%" if calculated_capex_pct else "CapEx not found in data")
+        calculated_capex_pct = round((capex_row.values[-1] / revenue_row.values[-1]) * 100, 2) if capex_row is not None else None
+        st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=6.0, help=f"Last actual CapEx ratio: {calculated_capex_pct}%" if calculated_capex_pct else "CapEx not found in data")
+
         st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0)
+
         tax_row = df.loc["Tax"] if "Tax" in df.index else None
-calculated_tax_pct = round((tax_row.values[-1] / ebit_row.values[-1]) * 100, 2) if tax_row is not None and ebit_row is not None else None
-st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value=25.0, help=f"Last actual tax rate: {calculated_tax_pct}%" if calculated_tax_pct else "Tax not found in data")
+        calculated_tax_pct = round((tax_row.values[-1] / ebit_row.values[-1]) * 100, 2) if tax_row is not None and ebit_row is not None else None
+        st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value=25.0, help=f"Last actual tax rate: {calculated_tax_pct}%" if calculated_tax_pct else "Tax not found in data")
+
         shares_row = st.session_state["balance_sheet"].copy()
-shares_row = shares_row.set_index("Report Date")
-share_cap = shares_row.loc["Equity Share Capital"].dropna().values[-1] if "Equity Share Capital" in shares_row.index else None
-st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr or M)", value=10.0, help=f"Last actual equity share capital: {share_cap}" if share_cap else "Equity Share Capital not found")
+        shares_row = shares_row.set_index("Report Date")
+        share_cap = shares_row.loc["Equity Share Capital"].dropna().values[-1] if "Equity Share Capital" in shares_row.index else None
+        st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr or M)", value=10.0, help=f"Last actual equity share capital: {share_cap}" if share_cap else "Equity Share Capital not found")
+
         st.session_state["user_growth_rate"] = st.number_input("Revenue Growth Rate for Projection (%)", value=10.0)
         st.session_state["terminal_growth"] = st.number_input("Terminal Growth Rate (%)", value=4.0)
 
