@@ -211,7 +211,7 @@ with tabs[2]:
         pat_0 = pbt_0 - tax_0
         eps_0 = pat_0 / shares if shares else 0
 
-(["Year 0", base_revenue, ebit_0, dep_0, capex_0, interest_0, pbt_0, tax_0, pat_0, eps_0])
+        (["Year 0", base_revenue, ebit_0, dep_0, capex_0, interest_0, pbt_0, tax_0, pat_0, eps_0])
         revenue = base_revenue
 
         for year in range(1, forecast_years + 1):
