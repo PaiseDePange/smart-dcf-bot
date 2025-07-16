@@ -101,15 +101,16 @@ with tabs[0]:
         df = st.session_state["annual_pl"].copy().set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
         tax_row = df.loc["Tax"].dropna()
+        depreciation_row = df.loc["Depreciation"].dropna()
 
         try:
             calculated_ebit = revenue_row[-1] - sum(df.loc[row].dropna()[-1] for row in [
                 "Raw Material Cost", "Change in Inventory", "Power and Fuel",
                 "Other Mfr. Exp", "Employee Cost", "Selling and admin", "Other Expenses"] if row in df.index)
             latest_revenue = revenue_row[-1]
-            calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
-            calculated_tax_rate = round((tax_row[-1]/calculated_ebit)*100,2)
-        
+            calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 1)
+            calculated_tax_rate = round((tax_row[-1]/calculated_ebit)*100,1)
+            calculated_depreciation_rate = round((depreciation_row[-1]/latest_revenue)*100,1)
         except:
             calculated_ebit = 0
             calculated_ebit_margin = 0
@@ -119,24 +120,24 @@ with tabs[0]:
             with col1:
                 st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0, step=0.1, format="%.1f", help="Expected revenue growth for years 1 and 2")
             with col2:
-                st.session_state["user_growth_rate_yr_3_4_5"] = st.number_input("Growth Y3 to Y5 (%)", value=10.0, help="Expected revenue growth for years 3 to 5")
+                st.session_state["user_growth_rate_yr_3_4_5"] = st.number_input("Growth Y3 to Y5 (%)", value=10.0, step=0.1,help="Expected revenue growth for years 3 to 5")
             with col3:
-                st.session_state["user_growth_rate_yr_6_onwards"] = st.number_input("Terminal Growth Rate (%)", value=4.0, help="Growth rate after forecast period")
+                st.session_state["user_growth_rate_yr_6_onwards"] = st.number_input("Terminal Growth Rate (%)", value=4.0, step=0.1, help="Growth rate after forecast period")
 
 
         with st.expander("📊 Revenue & Cost Assumptions"):
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=calculated_ebit_margin, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
-                st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=5.0, help="Last actual depreciation ratio or enter your assumption")
-                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=4.0, help="User needs to update based on future CapEx plans")
+                st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=calculated_ebit_margin, step=0.1, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
+                st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=calculated_depreciation_rate, step=0.1, help=f"Last actual depreciation ratio : {calculated_depreciation_rate}% or enter your assumption")
+                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=4.0, step=0.1, help="User needs to update based on future CapEx plans")
             with col2:
-                st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0, help="Weighted Average Cost of Capital to discount future cashflows")
-                st.session_state["wc_change_pct"] = st.number_input("Working Capital Changes (% of Revenue)", value=2.0, help="Assumed working capital requirement as % of revenue")
-                st.session_state["tax_rate"] = st.number_input("Tax Rate (%) of EBIT", value = calculated_tax_rate, help=f"Last actual Tax rate % of EBIT :{calculated_tax_rate}%")
+                st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0, step=0.1, help="Weighted Average Cost of Capital to discount future cashflows")
+                st.session_state["wc_change_pct"] = st.number_input("Working Capital Changes (% of Revenue)", value=2.0, step=0.1, help="Assumed working capital requirement as % of revenue")
+                st.session_state["tax_rate"] = st.number_input("Tax Rate (%) of EBIT", value = calculated_tax_rate, step=0.1, help=f"Last actual Tax rate % of EBIT :{calculated_tax_rate}%")
             with col3:
-                st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, help="Projection time horizon for future FCF")
-                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=10.0, help="Total number of outstanding equity shares")
+                st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, step=1,help="Projection time horizon for future FCF")
+                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=10.0, step=0.1, help="Total number of outstanding equity shares")
 
 # --- DCF TAB ---
 with tabs[1]:
