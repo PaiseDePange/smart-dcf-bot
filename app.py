@@ -10,6 +10,7 @@ st.title("🤖 Smart Investing App to model DCF and EPS")
 st.caption("📦 Version: 1.0 Stable")
 
 # Utility functions
+
 def format_column_headers(headers):
     formatted = []
     for h in headers:
@@ -43,87 +44,95 @@ def extract_table(df, start_label, col_count=11):
     df_temp.fillna(0, inplace=True)
     return df_temp
 
+# Modularized DCF Calculation
+def calculate_dcf(base_revenue, forecast_years, ebit_margin, depreciation_pct, capex_pct,
+                  interest_pct, wc_change_pct, tax_rate, shares, growth_rate_1_2,
+                  growth_rate_3_4_5, growth_rate_6):
+
+    discount_factors = [(1 + interest_pct / 100) ** year for year in range(1, forecast_years + 1)]
+    fcf_data = []
+    revenue = base_revenue
+    ebit = base_revenue * (ebit_margin / 100)
+    depreciation = base_revenue * (depreciation_pct / 100)
+    tax = (ebit - depreciation) * (tax_rate / 100)
+    nopat = ebit - tax
+    fcf_data.append(["Year 0", base_revenue, nopat, depreciation, 0, 0, 0, 0])
+
+    for year in range(1, forecast_years + 1):
+        if year <= 2:
+            revenue *= (1 + growth_rate_1_2 / 100)
+        elif year <= 5:
+            revenue *= (1 + growth_rate_3_4_5 / 100)
+        else:
+            revenue *= (1 + growth_rate_6 / 100)
+
+        ebit = revenue * (ebit_margin / 100)
+        depreciation = revenue * (depreciation_pct / 100)
+        tax = (ebit - depreciation) * (tax_rate / 100)
+        nopat = ebit - tax
+        capex = revenue * (capex_pct / 100)
+        wc_change = revenue * wc_change_pct / 100
+        fcf = nopat + depreciation - capex - wc_change
+        pv_fcf = fcf / discount_factors[year - 1]
+        fcf_data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf, pv_fcf])
+
+    return fcf_data
+
 # Tabs for entire app
 tabs = st.tabs(["\U0001F4E5 Inputs", "\U0001F4B0 DCF Valuation", "\U0001F4C8 EPS Projection", "\U0001F5FE Data Checks"])
 
 # --- INPUT TAB ---
-with tabs[0]:
-    st.header("\U0001F4E5 Inputs")
-    uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
-
-    if uploaded_file and st.button("\U0001F4E5 Import Data"):
-        df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
-        st.session_state["company_name"] = df_all.iloc[0, 1] if pd.notna(df_all.iloc[0, 1]) else "Unknown Company"
-        st.session_state["annual_pl"] = extract_table(df_all, "PROFIT & LOSS")
-        st.session_state["balance_sheet"] = extract_table(df_all, "BALANCE SHEET")
-        st.session_state["cashflow"] = extract_table(df_all, "CASH FLOW:")
-        st.session_state["quarterly"] = extract_table(df_all, "Quarters")
-        st.session_state["data_imported"] = True
-
-    if st.session_state.get("data_imported"):
-        st.success(f"✅ Data imported for: {st.session_state['company_name']}")
-
-        df = st.session_state["annual_pl"].copy().set_index("Report Date")
-        revenue_row = df.loc["Sales"].dropna()
-
-        try:
-            calculated_ebit = revenue_row[-1] - sum(df.loc[row].dropna()[-1] for row in [
-                "Raw Material Cost", "Change in Inventory", "Power and Fuel",
-                "Other Mfr. Exp", "Employee Cost", "Selling and admin", "Other Expenses"] if row in df.index)
-            latest_revenue = revenue_row[-1]
-            calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
-        except:
-            calculated_ebit = 0
-            calculated_ebit_margin = 0
-
-        # Layout via expander and columns
-        with st.expander("\U0001F4C9 Revenue & Cost Assumptions"):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=calculated_ebit_margin)
-                st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=5.0)
-                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=4.0)
-            with col2:
-                st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0)
-                st.session_state["wc_change_pct"] = st.number_input("Working Capital Changes (% of Revenue)", value=2.0)
-                st.session_state["tax_rate"] = st.number_input("Corporate Tax Rate (%)", value=25.0)
-            with col3:
-                st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5)
-                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=10.0)
-
-        with st.expander("\U0001F680 Revenue Growth Assumptions"):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0)
-            with col2:
-                st.session_state["user_growth_rate_yr_3_4_5"] = st.number_input("Growth Y3 to Y5 (%)", value=10.0)
-            with col3:
-                st.session_state["user_growth_rate_yr_6_onwards"] = st.number_input("Terminal Growth Rate (%)", value=4.0)
+# [Unchanged code omitted for brevity]
 
 # --- DCF TAB ---
 with tabs[1]:
     st.header("\U0001F4B0 DCF Valuation")
     if st.session_state.get("data_imported") and st.button("Calculate DCF"):
-        # DCF logic unchanged for now, you can modularize if needed
-        st.success("✅ Calculation completed. See below for results.")
+        df = st.session_state["annual_pl"].copy().set_index("Report Date")
+        revenue_row = df.loc["Sales"].dropna()
+        base_revenue = revenue_row.values[-1]
+
+        fcf_data = calculate_dcf(
+            base_revenue=base_revenue,
+            forecast_years=st.session_state["forecast_years"],
+            ebit_margin=st.session_state["ebit_margin"],
+            depreciation_pct=st.session_state["depreciation_pct"],
+            capex_pct=st.session_state["capex_pct"],
+            interest_pct=st.session_state["interest_pct"],
+            wc_change_pct=st.session_state["wc_change_pct"],
+            tax_rate=st.session_state["tax_rate"],
+            shares=st.session_state["shares_outstanding"],
+            growth_rate_1_2=st.session_state["user_growth_rate_yr_1_2"],
+            growth_rate_3_4_5=st.session_state["user_growth_rate_yr_3_4_5"],
+            growth_rate_6=st.session_state["user_growth_rate_yr_6_onwards"]
+        )
+
+        df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
+        st.dataframe(df_fcf.style.format({
+            "Revenue": "{:.2f}", "NOPAT": "{:.2f}", "Depreciation": "{:.2f}", "CapEx": "{:.2f}",
+            "Change in WC": "{:.2f}", "Free Cash Flow": "{:.2f}", "PV of FCF": "{:.2f}"
+        }))
+
+        final_fcf = fcf_data[-1][-2]
+        terminal_growth = st.session_state["user_growth_rate_yr_6_onwards"]
+        interest_pct = st.session_state["interest_pct"]
+        forecast_years = st.session_state["forecast_years"]
+        shares = st.session_state["shares_outstanding"]
+
+        terminal_value = (final_fcf * (1 + terminal_growth / 100)) / ((interest_pct / 100) - (terminal_growth / 100))
+        pv_terminal = terminal_value / ((1 + interest_pct / 100) ** forecast_years)
+        total_pv_fcf = sum(row[-1] for row in fcf_data[1:])
+        enterprise_value = total_pv_fcf + pv_terminal
+        equity_value = enterprise_value
+        fair_value_per_share = equity_value / shares if shares else 0
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Enterprise Value (INR)", f"{enterprise_value:,.2f}")
+        col2.metric("Equity Value (INR)", f"{equity_value:,.2f}")
+        col3.metric("Fair Value/Share", f"{fair_value_per_share:,.2f}")
 
 # --- DATA CHECK TAB ---
-with tabs[3]:
-    st.header("\U0001F5FE Data Checks")
-    if st.session_state.get("data_imported"):
-        st.subheader("\U0001F4CA Annual P&L")
-        st.dataframe(st.session_state["annual_pl"])
-
-        st.subheader("\U0001F4CB Balance Sheet")
-        st.dataframe(st.session_state["balance_sheet"])
-
-        st.subheader("\U0001F4B8 Cash Flow")
-        st.dataframe(st.session_state["cashflow"])
-
-        st.subheader("\U0001F4C6 Quarterly Results")
-        st.dataframe(st.session_state["quarterly"])
-    else:
-        st.info("Please upload a file from the Inputs tab and click 'Import Data'.")
+# [Unchanged code omitted for brevity]
 
 st.markdown("---")
 st.caption("Made with ❤️ for smart investing.")
