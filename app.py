@@ -131,6 +131,11 @@ with tabs[0]:
               outstanding_shares = 0
           
         with st.expander("🚀 Revenue Growth Assumptions"):
+            st.markdown("""
+                <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
+                💡 <strong>Please enter these assumptions based on your judgement:</strong><br>    
+                </div>
+                """, unsafe_allow_html=True)
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0, step=0.1, format="%.1f", help="Expected revenue growth for years 1 and 2")
@@ -145,7 +150,7 @@ with tabs[0]:
             with col1:
                 st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=calculated_ebit_margin, step=0.1, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
                 st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=calculated_depreciation_rate, step=0.1, help=f"Last actual depreciation ratio : {calculated_depreciation_rate}% or enter your assumption")
-                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=4.0, step=0.1, help="User needs to update based on future CapEx plans")
+                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=2.0, step=0.1, help="User needs to update based on future CapEx plans")
             with col2:
                 st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0, step=0.1, help="Weighted Average Cost of Capital to discount future cashflows")
                 st.session_state["wc_change_pct"] = st.number_input("Working Capital Changes (% of Revenue)", value=2.0, step=0.1, help="Assumed working capital requirement as % of revenue")
