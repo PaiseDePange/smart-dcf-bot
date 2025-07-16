@@ -55,7 +55,7 @@ def calculate_dcf(base_revenue, forecast_years, ebit_margin, depreciation_pct, c
     ebit = base_revenue * (ebit_margin / 100)
     depreciation = base_revenue * (depreciation_pct / 100)
     tax = (ebit - depreciation) * (tax_rate / 100)
-    nopat = ebit - tax
+    net_op_pat = ebit - tax
     fcf_data.append(["Year 0", base_revenue, nopat, depreciation, 0, 0, 0, 0])
 
     for year in range(1, forecast_years + 1):
@@ -111,6 +111,16 @@ with tabs[0]:
             calculated_ebit = 0
             calculated_ebit_margin = 0
 
+        with st.expander("🚀 Revenue Growth Assumptions"):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0, help="Expected revenue growth for years 1 and 2")
+            with col2:
+                st.session_state["user_growth_rate_yr_3_4_5"] = st.number_input("Growth Y3 to Y5 (%)", value=10.0, help="Expected revenue growth for years 3 to 5")
+            with col3:
+                st.session_state["user_growth_rate_yr_6_onwards"] = st.number_input("Terminal Growth Rate (%)", value=4.0, help="Growth rate after forecast period")
+
+        
         with st.expander("📊 Revenue & Cost Assumptions"):
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -125,14 +135,6 @@ with tabs[0]:
                 st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, help="Projection time horizon for future FCF")
                 st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=10.0, help="Total number of outstanding equity shares")
 
-        with st.expander("🚀 Revenue Growth Assumptions"):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0, help="Expected revenue growth for years 1 and 2")
-            with col2:
-                st.session_state["user_growth_rate_yr_3_4_5"] = st.number_input("Growth Y3 to Y5 (%)", value=10.0, help="Expected revenue growth for years 3 to 5")
-            with col3:
-                st.session_state["user_growth_rate_yr_6_onwards"] = st.number_input("Terminal Growth Rate (%)", value=4.0, help="Growth rate after forecast period")
 
 # --- DCF TAB ---
 with tabs[1]:
