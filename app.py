@@ -92,26 +92,26 @@ def calculate_terminal_value(fcf, g, r, n):
 
 
 def dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct, capex_pct, wc_change_pct,
-            tax_rate, interest_pct, shares, growth_1_5, growth_6, terminal_growth):
-            revenue = base_revenue    
-            total_pv_fcf = 0
-            for year in range(1, forecast_years + 1):
-                revenue *= (1 + growth_1_5 / 100)
-                ebit = revenue * (ebit_margin / 100)
-                tax = ebit * (tax_rate / 100)
-                dep = revenue * (depreciation_pct / 100)
-                capex = revenue * (capex_pct / 100)
-                wc = revenue * (wc_change_pct / 100)
-                fcf = ebit - tax + dep - capex - wc
-                pv_fcf = fcf / ((1 + interest_pct / 100) ** year)
-                total_pv_fcf += pv_fcf
-        
-            final_fcf = fcf
-            pv_terminal, terminal_val = calculate_terminal_value(final_fcf, terminal_growth, interest_pct, forecast_years)
-            ev = total_pv_fcf + pv_terminal    
-            fv_per_share = ev / shares if shares else 0
-            terminal_weight = terminal_val / ev * 100 if ev else 0
-            return fv_per_share, terminal_weight
+    tax_rate, interest_pct, shares, growth_1_5, growth_6, terminal_growth):
+    revenue = base_revenue    
+    total_pv_fcf = 0
+    for year in range(1, forecast_years + 1):
+        revenue *= (1 + growth_1_5 / 100)
+        ebit = revenue * (ebit_margin / 100)
+        tax = ebit * (tax_rate / 100)
+        dep = revenue * (depreciation_pct / 100)
+        capex = revenue * (capex_pct / 100)
+        wc = revenue * (wc_change_pct / 100)
+        fcf = ebit - tax + dep - capex - wc
+        pv_fcf = fcf / ((1 + interest_pct / 100) ** year)
+        total_pv_fcf += pv_fcf
+
+    final_fcf = fcf
+    pv_terminal, terminal_val = calculate_terminal_value(final_fcf, terminal_growth, interest_pct, forecast_years)
+    ev = total_pv_fcf + pv_terminal    
+    fv_per_share = ev / shares if shares else 0
+    terminal_weight = terminal_val / ev * 100 if ev else 0
+    return fv_per_share, terminal_weight
 
 
 
