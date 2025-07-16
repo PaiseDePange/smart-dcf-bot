@@ -386,7 +386,7 @@ with tabs[1]:
     
         for g in growth_scenarios:
             val, tv_pct = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
-                                    capex_pct, wc_change_pct, tax_rate, wacc, shares, g, terminal_growth)
+                                    capex_pct, wc_change_pct, tax_rate, wacc, shares, g, g, terminal_growth)
             data1.append({"5Y Growth Rate": f"{g}%", "Fair Value (₹)": val, "Terminal % of EV": f"{tv_pct:.1f}%"})
     
         df1 = pd.DataFrame(data1)
