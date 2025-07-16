@@ -110,7 +110,7 @@ with tabs[0]:
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
             calculated_tax_rate = tax_row[-1]/calculated_ebit
         
-      except:
+        except:
             calculated_ebit = 0
             calculated_ebit_margin = 0
             calculated_tax_rate = 0
