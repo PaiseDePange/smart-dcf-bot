@@ -98,7 +98,7 @@ with tabs[0]:
         st.session_state["balance_sheet"] = extract_table(df_all, "BALANCE SHEET",1,11)
         st.session_state["cashflow"] = extract_table(df_all, "CASH FLOW:",1,11)
         st.session_state["quarterly"] = extract_table(df_all, "Quarters",1,11)
-        st.session_state["meta"] = extract_table(df_all, "META",1,2)
+        st.session_state["meta"] = extract_table(df_all, "META", 0, 2)
         st.session_state["data_imported"] = True
 
     if st.session_state.get("data_imported"):
@@ -114,8 +114,8 @@ with tabs[0]:
         df = st.session_state["meta"].copy()
         df.columns = ["Label", "Value"]
         df = df.set_index("Label")
-        currrent_price = df.loc["Current Price"].dropna()
-        market_cap = df.loc["Market Capitalization"].dropna()
+        current_price = float(df.loc["Current Price", "Value"])
+        market_cap = float(df.loc["Market Capitalization", "Value"])
       
         df = st.session_state["balance_sheet"].copy().set_index("Report Date")
         share_outstanding_row = df.loc["No. of Equity Shares"].dropna()
@@ -126,8 +126,8 @@ with tabs[0]:
         depreciation_row = df.loc["Depreciation"].dropna()
         try:
             calculated_ebit = revenue_row[-1] - sum(df.loc[row].dropna()[-1] for row in [
-            "Raw Material Cost", "Change in Inventory", "Power and Fuel",
-            "Other Mfr. Exp", "Employee Cost", "Selling and admin", "Other Expenses"] if row in df.index)
+                "Raw Material Cost", "Change in Inventory", "Power and Fuel",
+                "Other Mfr. Exp", "Employee Cost", "Selling and admin", "Other Expenses"] if row in df.index)
             latest_revenue = revenue_row[-1]
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 1)
             calculated_tax_rate = round((tax_row[-1]/calculated_ebit)*100,1)
