@@ -96,6 +96,13 @@ with tabs[0]:
         st.session_state["data_imported"] = True
 
     if st.session_state.get("data_imported"):
+        st.markdown("""
+        <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
+        💡 <strong>Note on Assumptions:</strong><br>
+        Some of the input assumptions below are automatically calculated from the financial data you've uploaded. Others require your judgment.<br>
+        If you're unsure about what values to use, you can ask <strong>ChatGPT</strong> for help! Just provide the <strong>company name</strong> along with supporting documents like <em>annual reports, earnings transcripts, or investor presentations</em>, and it can guide you toward reasonable and safe assumptions.
+        </div>
+        """, unsafe_allow_html=True)
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
 
         df = st.session_state["annual_pl"].copy().set_index("Report Date")
