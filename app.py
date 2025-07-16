@@ -104,14 +104,14 @@ with tabs[0]:
         </div>
         """, unsafe_allow_html=True)
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
-        
+
         df = st.session_state["balance_sheet"].copy().set_index("Report Date")
         share_outstanding_row = df.loc["No. of Equity Shares"].dropna()
-        
         df = st.session_state["annual_pl"].copy().set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
         tax_row = df.loc["Tax"].dropna()
         depreciation_row = df.loc["Depreciation"].dropna()
+        
         try:
             calculated_ebit = revenue_row[-1] - sum(df.loc[row].dropna()[-1] for row in [
                 "Raw Material Cost", "Change in Inventory", "Power and Fuel",
@@ -131,11 +131,6 @@ with tabs[0]:
               outstanding_shares = 0
           
         with st.expander("🚀 Revenue Growth Assumptions"):
-            st.markdown("""
-                <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
-                💡 <strong>Please enter these assumptions based on your judgement:</strong><br>    
-                </div>
-                """, unsafe_allow_html=True)
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0, step=0.1, format="%.1f", help="Expected revenue growth for years 1 and 2")
@@ -146,36 +141,38 @@ with tabs[0]:
 
 
         with st.expander("📊 Revenue & Cost Assumptions"):
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
-                st.markdown("""
-                <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
-                💡 <strong>These assumptions are calculated based on uploaded data, but you can change them if you want to!:<strong><br>    
-                </div>
-                """, unsafe_allow_html=True)
-            
                 st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=calculated_ebit_margin, step=0.1, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
                 st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=calculated_depreciation_rate, step=0.1, help=f"Last actual depreciation ratio : {calculated_depreciation_rate}% or enter your assumption")
-                st.session_state["tax_rate"] = st.number_input("Tax Rate (%) of EBIT", value = calculated_tax_rate, step=0.1, help=f"Last actual Tax rate % of EBIT :{calculated_tax_rate}%")
-                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=outstanding_shares, step=0.1, help=f"Last actual total number of outstanding equity shares : {outstanding_shares} ")                       
-
-                
+                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=4.0, step=0.1, help="User needs to update based on future CapEx plans")
             with col2:
-                st.markdown("""
-                <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
-                💡 <strong>Update these assumptions based on your judgement:<strong><br>    
-                </div>
-                """, unsafe_allow_html=True)
-            
-                st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, step=1,help="Projection time horizon for future FCF")
                 st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0, step=0.1, help="Weighted Average Cost of Capital to discount future cashflows")
                 st.session_state["wc_change_pct"] = st.number_input("Working Capital Changes (% of Revenue)", value=2.0, step=0.1, help="Assumed working capital requirement as % of revenue")
-                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=2.0, step=0.1, help="User needs to update based on future CapEx plans")
+                st.session_state["tax_rate"] = st.number_input("Tax Rate (%) of EBIT", value = calculated_tax_rate, step=0.1, help=f"Last actual Tax rate % of EBIT :{calculated_tax_rate}%")
+            with col3:
+                st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, step=1,help="Projection time horizon for future FCF")
+                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=outstanding_shares, step=0.1, help=f"Last actual total number of outstanding equity shares : {outstanding_shares} ")                       
 
 # --- DCF TAB ---
 with tabs[1]:
     st.header("\U0001F4B0 DCF Valuation")
-    if st.session_state.get("data_imported") and st.button("Calculate DCF"):
+        if st.session_state.get("data_imported") and st.button("Calculate DCF"):
+                with st.expander("📋 Assumptions Used in DCF Calculation"):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.write(f"**Base Revenue:** {base_revenue:,.2f}")
+                st.write(f"**EBIT Margin (%):** {st.session_state['ebit_margin']}")
+                st.write(f"**Tax Rate (% of EBIT):** {st.session_state['tax_rate']}")
+            with col2:
+                st.write(f"**Depreciation (% of Revenue):** {st.session_state['depreciation_pct']}")
+                st.write(f"**CapEx (% of Revenue):** {st.session_state['capex_pct']}")
+                st.write(f"**Change in WC (% of Revenue):** {st.session_state['wc_change_pct']}")
+            with col3:
+                st.write(f"**WACC (%):** {st.session_state['interest_pct']}")
+                st.write(f"**Forecast Years:** {st.session_state['forecast_years']}")
+                st.write(f"**Terminal Growth Rate (%):** {st.session_state['user_growth_rate_yr_6_onwards']}")
+
         df = st.session_state["annual_pl"].copy().set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
         base_revenue = revenue_row.values[-1]
