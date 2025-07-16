@@ -46,7 +46,7 @@ def extract_table(df, start_label, start_row_offset, col_count=11):
         data_rows.append(row.tolist())
 
     df_temp = pd.DataFrame(data_rows, columns=column_names)
-    #df_temp = df_temp.loc[:, df_temp.iloc[0].notna()]
+    df_temp = df_temp.loc[:, df_temp.iloc[0].notna()]
     df_temp.fillna(0, inplace=True)
     return df_temp
 
