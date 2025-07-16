@@ -5,13 +5,6 @@ import numpy as np
 from collections import Counter
 
 st.set_page_config(page_title="Investment Assistant", layout="wide")
-# 🤖 Streamlit App for Sophisticated DCF Valuation and EPS Projection
-import streamlit as st
-import pandas as pd
-import numpy as np
-from collections import Counter
-
-st.set_page_config(page_title="Investment Assistant", layout="wide")
 
 st.title("🤖 Stock Analysis Tool")
 st.caption("📦 Version: 1.0 Stable")
