@@ -146,18 +146,29 @@ with tabs[0]:
 
 
         with st.expander("📊 Revenue & Cost Assumptions"):
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             with col1:
+                st.markdown("""
+                <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
+                💡 These assumptions are calculated based on uploaded data, but you can change them if you want to!:<br>    
+                </div>
+                """, unsafe_allow_html=True)
+            
                 st.session_state["ebit_margin"] = st.number_input("EBIT Margin (%)", value=calculated_ebit_margin, step=0.1, help=f"Last actual EBIT margin: {calculated_ebit_margin}%" if calculated_ebit_margin else "EBIT not found in data")
                 st.session_state["depreciation_pct"] = st.number_input("Depreciation (% of Revenue)", value=calculated_depreciation_rate, step=0.1, help=f"Last actual depreciation ratio : {calculated_depreciation_rate}% or enter your assumption")
-                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=2.0, step=0.1, help="User needs to update based on future CapEx plans")
+                st.session_state["tax_rate"] = st.number_input("Tax Rate (%) of EBIT", value = calculated_tax_rate, step=0.1, help=f"Last actual Tax rate % of EBIT :{calculated_tax_rate}%")
+                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=outstanding_shares, step=0.1, help=f"Last actual total number of outstanding equity shares : {outstanding_shares} ")                       
+
+                
             with col2:
+                <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
+                💡 Update these assumptions based on your judgement:<br>    
+                </div>
+                """, unsafe_allow_html=True)
+                st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, step=1,help="Projection time horizon for future FCF")
                 st.session_state["interest_pct"] = st.number_input("WACC (%)", value=10.0, step=0.1, help="Weighted Average Cost of Capital to discount future cashflows")
                 st.session_state["wc_change_pct"] = st.number_input("Working Capital Changes (% of Revenue)", value=2.0, step=0.1, help="Assumed working capital requirement as % of revenue")
-                st.session_state["tax_rate"] = st.number_input("Tax Rate (%) of EBIT", value = calculated_tax_rate, step=0.1, help=f"Last actual Tax rate % of EBIT :{calculated_tax_rate}%")
-            with col3:
-                st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, step=1,help="Projection time horizon for future FCF")
-                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=outstanding_shares, step=0.1, help=f"Last actual total number of outstanding equity shares : {outstanding_shares} ")                       
+                st.session_state["capex_pct"] = st.number_input("CapEx (% of Revenue)", value=2.0, step=0.1, help="User needs to update based on future CapEx plans")
 
 # --- DCF TAB ---
 with tabs[1]:
