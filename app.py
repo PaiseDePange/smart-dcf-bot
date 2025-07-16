@@ -106,7 +106,7 @@ with tabs[0]:
         """, unsafe_allow_html=True)
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
         
-        df = st.session_state["meta"].copy().set_index("Number of shares")
+        df = st.session_state["meta"].copy().set_index("META")
         currrent_price = df.loc["Current Price"].dropna()
         market_cap = df.loc["Market Capitalization"].dropna()
       
