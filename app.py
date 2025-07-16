@@ -417,7 +417,7 @@ with tabs[1]:
             row = []
             for tg in tg_values:
                 val, _ = dcf_fair_value(base_revenue, forecast_years, em, depreciation_pct, capex_pct,
-                                        wc_change_pct, tax_rate, wacc, shares, 10, tg)
+                                        wc_change_pct, tax_rate, wacc, shares, 10, 10, tg)
                 row.append(val)
             matrix3.append(row)
     
