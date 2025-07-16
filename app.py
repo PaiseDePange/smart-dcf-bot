@@ -191,8 +191,9 @@ with tabs[1]:
                 st.write(f"**Depreciation (% of Revenue):** {st.session_state['depreciation_pct']}")
                 st.write(f"**CapEx (% of Revenue):** {st.session_state['capex_pct']}")
                 st.write(f"**Change in WC (% of Revenue):** {st.session_state['wc_change_pct']}")
-            with col3:
                 st.write(f"**WACC (%):** {st.session_state['interest_pct']}")
+                
+            with col3:
                 st.write(f"**Forecast Years:** {st.session_state['forecast_years']}")
                 st.write(f"**Growth Rate for Year 1 and 2 (%):** {st.session_state['user_growth_rate_yr_1_2']}")
                 st.write(f"**Growth Rate for Year 3, 4 and 5 (%):** {st.session_state['user_growth_rate_yr_3_4_5']}")
