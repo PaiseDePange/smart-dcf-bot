@@ -56,7 +56,7 @@ def calculate_dcf(base_revenue, forecast_years, ebit_margin, depreciation_pct, c
     depreciation = base_revenue * (depreciation_pct / 100)
     tax = (ebit - depreciation) * (tax_rate / 100)
     net_op_pat = ebit - tax
-    fcf_data.append(["Year 0", base_revenue, nopat, depreciation, 0, 0, 0, 0])
+    fcf_data.append(["Year 0", base_revenue, net_op_pat, depreciation, 0, 0, 0, 0])
 
     for year in range(1, forecast_years + 1):
         if year <= 2:
@@ -69,12 +69,12 @@ def calculate_dcf(base_revenue, forecast_years, ebit_margin, depreciation_pct, c
         ebit = revenue * (ebit_margin / 100)
         depreciation = revenue * (depreciation_pct / 100)
         tax = (ebit - depreciation) * (tax_rate / 100)
-        nopat = ebit - tax
+        net_op_pat = ebit - tax
         capex = revenue * (capex_pct / 100)
         wc_change = revenue * wc_change_pct / 100
-        fcf = nopat + depreciation - capex - wc_change
+        fcf = net_op_pat + depreciation - capex - wc_change
         pv_fcf = fcf / discount_factors[year - 1]
-        fcf_data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf, pv_fcf])
+        fcf_data.append([f"Year {year}", revenue, net_op_pat, depreciation, capex, wc_change, fcf, pv_fcf])
 
     return fcf_data
 
@@ -159,9 +159,9 @@ with tabs[1]:
             growth_rate_6=st.session_state["user_growth_rate_yr_6_onwards"]
         )
 
-        df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "NOPAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
+        df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "Net_Op_PAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
         st.dataframe(df_fcf.style.format({
-            "Revenue": "{:.2f}", "NOPAT": "{:.2f}", "Depreciation": "{:.2f}", "CapEx": "{:.2f}",
+            "Revenue": "{:.2f}", "net_op_pat": "{:.2f}", "Depreciation": "{:.2f}", "CapEx": "{:.2f}",
             "Change in WC": "{:.2f}", "Free Cash Flow": "{:.2f}", "PV of FCF": "{:.2f}"
         }))
 
