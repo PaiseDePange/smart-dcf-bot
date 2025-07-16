@@ -110,7 +110,7 @@ def dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct, 
     pv_terminal, terminal_val = calculate_terminal_value(final_fcf, terminal_growth, interest_pct, forecast_years)
     ev = total_pv_fcf + pv_terminal    
     fv_per_share = ev / shares if shares else 0
-    terminal_weight = terminal_val / ev * 100 if ev else 0
+    terminal_weight = pv_terminal / ev * 100 if ev else 0
     return fv_per_share, terminal_weight
 
 
