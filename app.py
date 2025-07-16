@@ -158,20 +158,20 @@ with tabs[0]:
 with tabs[1]:
     st.header("\U0001F4B0 DCF Valuation")
         if st.session_state.get("data_imported") and st.button("Calculate DCF"):
-                with st.expander("📋 Assumptions Used in DCF Calculation"):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.write(f"**Base Revenue:** {base_revenue:,.2f}")
-                st.write(f"**EBIT Margin (%):** {st.session_state['ebit_margin']}")
-                st.write(f"**Tax Rate (% of EBIT):** {st.session_state['tax_rate']}")
-            with col2:
-                st.write(f"**Depreciation (% of Revenue):** {st.session_state['depreciation_pct']}")
-                st.write(f"**CapEx (% of Revenue):** {st.session_state['capex_pct']}")
-                st.write(f"**Change in WC (% of Revenue):** {st.session_state['wc_change_pct']}")
-            with col3:
-                st.write(f"**WACC (%):** {st.session_state['interest_pct']}")
-                st.write(f"**Forecast Years:** {st.session_state['forecast_years']}")
-                st.write(f"**Terminal Growth Rate (%):** {st.session_state['user_growth_rate_yr_6_onwards']}")
+            with st.expander("📋 Assumptions Used in DCF Calculation"):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.write(f"**Base Revenue:** {base_revenue:,.2f}")
+                    st.write(f"**EBIT Margin (%):** {st.session_state['ebit_margin']}")
+                    st.write(f"**Tax Rate (% of EBIT):** {st.session_state['tax_rate']}")
+                with col2:
+                    st.write(f"**Depreciation (% of Revenue):** {st.session_state['depreciation_pct']}")
+                    st.write(f"**CapEx (% of Revenue):** {st.session_state['capex_pct']}")
+                    st.write(f"**Change in WC (% of Revenue):** {st.session_state['wc_change_pct']}")
+                with col3:
+                    st.write(f"**WACC (%):** {st.session_state['interest_pct']}")
+                    st.write(f"**Forecast Years:** {st.session_state['forecast_years']}")
+                    st.write(f"**Terminal Growth Rate (%):** {st.session_state['user_growth_rate_yr_6_onwards']}")
 
         df = st.session_state["annual_pl"].copy().set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
