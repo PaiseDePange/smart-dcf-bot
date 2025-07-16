@@ -405,7 +405,7 @@ with tabs[1]:
                 row.append(val)
             matrix2.append(row)
     
-        df2 = pd.DataFrame(matrix2, index=[f"{w}%" for w in waccs], columns=[f"{g}%" for g in terminal_gs])
+        df2 = pd.DataFrame(matrix2, index=[f"WACC = {w}%" for w in waccs], columns=[f"Terminal Growth = {g}%" for g in terminal_gs])
         st.dataframe(df2.style.applymap(style_fair).format("₹{:.2f}"))
     
         # 3️⃣ Table: EBIT vs Terminal Growth
@@ -421,7 +421,7 @@ with tabs[1]:
                 row.append(val)
             matrix3.append(row)
     
-        df3 = pd.DataFrame(matrix3, index=[f"{e}%" for e in ebit_margins], columns=[f"{g}%" for g in tg_values])
+        df3 = pd.DataFrame(matrix3, index=[f"EBIT Margin = {e}%" for e in ebit_margins], columns=[f"Terminal Growth = {g}%" for g in tg_values])
         st.dataframe(df3.style.applymap(style_fair).format("₹{:.2f}"))
 
 
