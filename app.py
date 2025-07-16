@@ -401,7 +401,7 @@ with tabs[1]:
             row = []
             for tg in terminal_gs:
                 val, _ = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct, capex_pct,
-                                        wc_change_pct, tax_rate, w, shares, 10, tg)
+                                        wc_change_pct, tax_rate, w, shares, 10, 10, tg)
                 row.append(val)
             matrix2.append(row)
     
