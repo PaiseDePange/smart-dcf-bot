@@ -13,12 +13,17 @@ st.caption("📦 Version: 1.0 Stable")
 
 def format_column_headers(headers):
     formatted = []
+    blank_counter = 1
     for h in headers:
         try:
             h_parsed = pd.to_datetime(h)
             formatted.append(h_parsed.strftime("%b-%Y"))
         except:
-            formatted.append(str(h) if pd.notnull(h) else "")
+            if pd.notnull(h) and str(h).strip():
+                formatted.append(str(h))
+            else:
+                formatted.append(f"Unnamed_{blank_counter}")
+                blank_counter += 1
     counts = Counter()
     unique = []
     for h in formatted:
@@ -93,7 +98,7 @@ with tabs[0]:
         st.session_state["balance_sheet"] = extract_table(df_all, "BALANCE SHEET",1,11)
         st.session_state["cashflow"] = extract_table(df_all, "CASH FLOW:",1,11)
         st.session_state["quarterly"] = extract_table(df_all, "Quarters",1,11)
-        st.session_state["meta"] = extract_table(df_all, "META",0,11)
+        st.session_state["meta"] = extract_table(df_all, "META",0,3)
         st.session_state["data_imported"] = True
 
     if st.session_state.get("data_imported"):
