@@ -72,9 +72,9 @@ def calculate_dcf(base_revenue, forecast_years, ebit_margin, depreciation_pct, c
         net_op_pat = ebit - tax
         capex = revenue * (capex_pct / 100)
         wc_change = revenue * wc_change_pct / 100
-        fcf = net_op_pat + depreciation - capex - wc_change
+        fcf = nopat + depreciation - capex - wc_change
         pv_fcf = fcf / discount_factors[year - 1]
-        fcf_data.append([f"Year {year}", revenue, net_op_pat, depreciation, capex, wc_change, fcf, pv_fcf])
+        fcf_data.append([f"Year {year}", revenue, nopat, depreciation, capex, wc_change, fcf, pv_fcf])
 
     return fcf_data
 
@@ -110,7 +110,6 @@ with tabs[0]:
         except:
             calculated_ebit = 0
             calculated_ebit_margin = 0
-
         with st.expander("🚀 Revenue Growth Assumptions"):
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -120,7 +119,7 @@ with tabs[0]:
             with col3:
                 st.session_state["user_growth_rate_yr_6_onwards"] = st.number_input("Terminal Growth Rate (%)", value=4.0, help="Growth rate after forecast period")
 
-        
+
         with st.expander("📊 Revenue & Cost Assumptions"):
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -134,7 +133,6 @@ with tabs[0]:
             with col3:
                 st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, help="Projection time horizon for future FCF")
                 st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=10.0, help="Total number of outstanding equity shares")
-
 
 # --- DCF TAB ---
 with tabs[1]:
@@ -159,9 +157,9 @@ with tabs[1]:
             growth_rate_6=st.session_state["user_growth_rate_yr_6_onwards"]
         )
 
-        df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "Net_Op_PAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
+        df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "Net Operating PAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
         st.dataframe(df_fcf.style.format({
-            "Revenue": "{:.2f}", "net_op_pat": "{:.2f}", "Depreciation": "{:.2f}", "CapEx": "{:.2f}",
+            "Revenue": "{:.2f}", "Net Operating PAT": "{:.2f}", "Depreciation": "{:.2f}", "CapEx": "{:.2f}",
             "Change in WC": "{:.2f}", "Free Cash Flow": "{:.2f}", "PV of FCF": "{:.2f}"
         }))
 
