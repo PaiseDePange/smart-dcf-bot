@@ -4,9 +4,9 @@ import pandas as pd
 import numpy as np
 from collections import Counter
 
-st.set_page_config(page_title="Investment Assistant", layout="wide")
+st.set_page_config(page_title="Smart Investing App", layout="wide")
 
-st.title("🤖 Stock Analysis Tool")
+st.title("🤖 Smart Investing App to model DCF and EPS")
 st.caption("📦 Version: 1.0 Stable")
 
 # Utility functions
@@ -251,6 +251,4 @@ with tabs[3]:
     else:
         st.info("Please upload a file from the Inputs tab and click 'Import Data'.")
 
-st.title("🤖 Stock Analysis Tool")
-st.caption("📦 Version: 1.0 Stable")
-
+st.title("🤖 Thanks")
