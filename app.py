@@ -120,6 +120,7 @@ with tabs[0]:
         try:
               outstanding_shares = round(share_outstanding_row[-1]/10000000,2)
         except:
+              outstanding_shares = 0
           
         with st.expander("🚀 Revenue Growth Assumptions"):
             col1, col2, col3 = st.columns(3)
