@@ -93,7 +93,7 @@ with tabs[0]:
     uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
 
     if uploaded_file and st.button("📥 Import Data"):
-    uploaded_file.seek(0)  # Reset pointer for pandas
+        uploaded_file.seek(0)  # Reset pointer for pandas
     try:
         df_all = pd.read_excel(uploaded_file, sheet_name="Data Sheet", header=None, engine="openpyxl")
     except Exception as e:
