@@ -93,6 +93,7 @@ with tabs[0]:
         st.session_state["balance_sheet"] = extract_table(df_all, "BALANCE SHEET")
         st.session_state["cashflow"] = extract_table(df_all, "CASH FLOW:")
         st.session_state["quarterly"] = extract_table(df_all, "Quarters")
+        st.session_state["meta"] = extract_table(df_all, "META")
         st.session_state["data_imported"] = True
 
     if st.session_state.get("data_imported"):
@@ -105,6 +106,10 @@ with tabs[0]:
         """, unsafe_allow_html=True)
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
         
+        df = st.session_state["meta"].copy().set_index("Number of shares")
+        currrent_price = df.loc["Current Price"].dropna()
+        market_cap = df.loc["Market Capitalization"].dropna()
+      
         df = st.session_state["balance_sheet"].copy().set_index("Report Date")
         share_outstanding_row = df.loc["No. of Equity Shares"].dropna()
         
@@ -256,7 +261,25 @@ with tabs[1]:
         col3.metric("Fair Value/Share", f"{fair_value_per_share:,.2f}")
 
 # --- DATA CHECK TAB ---
-# [Unchanged code omitted for brevity]
+with tabs[3]:
+    st.header("🧾 Data Checks")
+    if st.session_state.get("data_imported"):
+        st.subheader("📌 Company Meta Info")
+        st.dataframe(st.session_state["meta"])
+
+        st.subheader("📊 Annual Profit & Loss")
+        st.dataframe(st.session_state["annual_pl"])
+
+        st.subheader("📆 Quarterly Results")
+        st.dataframe(st.session_state["quarterly"])
+
+        st.subheader("📋 Balance Sheet")
+        st.dataframe(st.session_state["balance_sheet"])
+
+        st.subheader("💸 Cash Flow Statement")
+        st.dataframe(st.session_state["cashflow"])
+    else:
+        st.info("Please upload a file from the Inputs tab and click 'Import Data'.")
 
 st.markdown("---")
 st.caption("Made with ❤️ by Paise De Pange for Smart Investing.")
