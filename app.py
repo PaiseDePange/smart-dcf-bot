@@ -186,6 +186,7 @@ with tabs[1]:
                 st.write(f"**Base Revenue:** {base_revenue:,.2f}")
                 st.write(f"**EBIT Margin (%):** {st.session_state['ebit_margin']}")
                 st.write(f"**Tax Rate (% of EBIT):** {st.session_state['tax_rate']}")
+                st.write(f"**No of Equity Shares :** {st.session_state['shares_outstanding']}")
             with col2:
                 st.write(f"**Depreciation (% of Revenue):** {st.session_state['depreciation_pct']}")
                 st.write(f"**CapEx (% of Revenue):** {st.session_state['capex_pct']}")
@@ -193,7 +194,9 @@ with tabs[1]:
             with col3:
                 st.write(f"**WACC (%):** {st.session_state['interest_pct']}")
                 st.write(f"**Forecast Years:** {st.session_state['forecast_years']}")
-                st.write(f"**Terminal Growth Rate (%):** {st.session_state['user_growth_rate_yr_6_onwards']}")
+                st.write(f"**Growth Rate for Year 1 and 2 (%):** {st.session_state['user_growth_rate_yr_1_2']}")
+                st.write(f"**Growth Rate for Year 3, 4 and 5 (%):** {st.session_state['user_growth_rate_yr_3_4_5']}")
+                st.write(f"**Growth Rate from year 6 onwards (%):** {st.session_state['user_growth_rate_yr_6_onwards']}")
         
         fcf_data = calculate_dcf(
             base_revenue=base_revenue,
