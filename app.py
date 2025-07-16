@@ -111,9 +111,9 @@ with tabs[0]:
         """, unsafe_allow_html=True)
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
         
-                df = st.session_state["meta"].copy()
-df.columns = ["Label", "Value"]
-df = df.set_index("Label")
+        df = st.session_state["meta"].copy()
+        df.columns = ["Label", "Value"]
+        df = df.set_index("Label")
         currrent_price = df.loc["Current Price"].dropna()
         market_cap = df.loc["Market Capitalization"].dropna()
       
@@ -126,8 +126,8 @@ df = df.set_index("Label")
         depreciation_row = df.loc["Depreciation"].dropna()
         try:
             calculated_ebit = revenue_row[-1] - sum(df.loc[row].dropna()[-1] for row in [
-                "Raw Material Cost", "Change in Inventory", "Power and Fuel",
-                "Other Mfr. Exp", "Employee Cost", "Selling and admin", "Other Expenses"] if row in df.index)
+            "Raw Material Cost", "Change in Inventory", "Power and Fuel",
+            "Other Mfr. Exp", "Employee Cost", "Selling and admin", "Other Expenses"] if row in df.index)
             latest_revenue = revenue_row[-1]
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 1)
             calculated_tax_rate = round((tax_row[-1]/calculated_ebit)*100,1)
