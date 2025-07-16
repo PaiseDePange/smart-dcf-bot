@@ -150,7 +150,7 @@ with tabs[0]:
             with col1:
                 st.markdown("""
                 <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
-                💡 These assumptions are calculated based on uploaded data, but you can change them if you want to!:<br>    
+                💡 <strong>These assumptions are calculated based on uploaded data, but you can change them if you want to!:<strong><br>    
                 </div>
                 """, unsafe_allow_html=True)
             
