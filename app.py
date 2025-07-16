@@ -162,7 +162,7 @@ with tabs[0]:
                 
             with col2:
                 <div style='border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background-color: #f9f9f9;'>
-                💡 Update these assumptions based on your judgement:<br>    
+                💡 <strong>Update these assumptions based on your judgement:<strong><br>    
                 </div>
                 """, unsafe_allow_html=True)
                 st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, step=1,help="Projection time horizon for future FCF")
