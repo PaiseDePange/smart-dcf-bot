@@ -104,13 +104,14 @@ with tabs[0]:
         </div>
         """, unsafe_allow_html=True)
         st.success(f"✅ Data imported for: {st.session_state['company_name']}")
-
+        
+        df = st.session_state["balance_sheet"].copy().set_index("Report Date")
+        share_outstanding_row = df.loc["No. of Equity Shares"].dropna()
+        
         df = st.session_state["annual_pl"].copy().set_index("Report Date")
         revenue_row = df.loc["Sales"].dropna()
         tax_row = df.loc["Tax"].dropna()
         depreciation_row = df.loc["Depreciation"].dropna()
-        df = st.session_state["balance_sheet"].copy().set_index("Report Date")
-        share_outstanding_row = df.loc["No. of Equity Shares"].dropna()
         try:
             calculated_ebit = revenue_row[-1] - sum(df.loc[row].dropna()[-1] for row in [
                 "Raw Material Cost", "Change in Inventory", "Power and Fuel",
