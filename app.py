@@ -380,7 +380,8 @@ with tabs[1]:
         data1 = []
         base_growth = 10  # or any value in growth_scenarios you want as baseline
         base_value, base_tv_weight = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
-                                capex_pct, wc_change_pct, tax_rate, wacc, shares, base_growth, terminal_growth)
+                            capex_pct, wc_change_pct, tax_rate, wacc, shares, base_growth, base_growth, terminal_growth)
+
     
     
         for g in growth_scenarios:
