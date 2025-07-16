@@ -382,52 +382,52 @@ with tabs[1]:
 
     # 1️⃣ Table: Fair Value vs 5-Year Growth
     st.markdown("### 📊 Scenario 1: 5-Year Revenue Growth Rate Sensitivity")
-        growth_scenarios = [5, 10, 14, 16, 25]
-        data1 = []
-        base_growth = 10  # or any value in growth_scenarios you want as baseline
-        base_value, base_tv_weight = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
-                                capex_pct, wc_change_pct, tax_rate, wacc, shares, base_growth, terminal_growth)
+    growth_scenarios = [5, 10, 14, 16, 25]
+    data1 = []
+    base_growth = 10  # or any value in growth_scenarios you want as baseline
+    base_value, base_tv_weight = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
+                            capex_pct, wc_change_pct, tax_rate, wacc, shares, base_growth, terminal_growth)
 
 
-        for g in growth_scenarios:
-            val, tv_pct = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
-                                    capex_pct, wc_change_pct, tax_rate, wacc, shares, g, terminal_growth)
-            data1.append({"5Y Growth Rate": f"{g}%", "Fair Value (₹)": val, "Terminal % of EV": f"{tv_pct:.1f}%"})
-    
-        df1 = pd.DataFrame(data1)
-        st.dataframe(df1.style.applymap(style_fair, subset=["Fair Value (₹)"]).format({"Fair Value (₹)": "₹{:.2f}"}))
+    for g in growth_scenarios:
+        val, tv_pct = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
+                                capex_pct, wc_change_pct, tax_rate, wacc, shares, g, terminal_growth)
+        data1.append({"5Y Growth Rate": f"{g}%", "Fair Value (₹)": val, "Terminal % of EV": f"{tv_pct:.1f}%"})
 
-        # 2️⃣ Table: WACC vs Terminal Growth
-        st.markdown("### 📊 Scenario 2: WACC vs Terminal Growth")
-        waccs = [7, 9, 11, 13]
-        terminal_gs = [4, 7, 10, 12]
-        matrix2 = []
-        for w in waccs:
-            row = []
-            for tg in terminal_gs:
-                val, _ = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct, capex_pct,
-                                        wc_change_pct, tax_rate, w, shares, 10, tg)
-                row.append(val)
-            matrix2.append(row)
+    df1 = pd.DataFrame(data1)
+    st.dataframe(df1.style.applymap(style_fair, subset=["Fair Value (₹)"]).format({"Fair Value (₹)": "₹{:.2f}"}))
 
-        df2 = pd.DataFrame(matrix2, index=[f"{w}%" for w in waccs], columns=[f"{g}%" for g in terminal_gs])
-        st.dataframe(df2.style.applymap(style_fair).format("₹{:.2f}"))
-    
-        # 3️⃣ Table: EBIT vs Terminal Growth
-        st.markdown("### 📊 Scenario 3: EBIT Margin vs Terminal Growth")
-        ebit_margins = [8, 12, 16, 20, 25]
-        tg_values = [4, 7, 10, 12]
-        matrix3 = []
-        for em in ebit_margins:
-            row = []
-            for tg in tg_values:
-                val, _ = dcf_fair_value(base_revenue, forecast_years, em, depreciation_pct, capex_pct,
-                                        wc_change_pct, tax_rate, wacc, shares, 10, tg)
-                row.append(val)
-            matrix3.append(row)
-    
-        df3 = pd.DataFrame(matrix3, index=[f"{e}%" for e in ebit_margins], columns=[f"{g}%" for g in tg_values])
-        st.dataframe(df3.style.applymap(style_fair).format("₹{:.2f}"))
+    # 2️⃣ Table: WACC vs Terminal Growth
+    st.markdown("### 📊 Scenario 2: WACC vs Terminal Growth")
+    waccs = [7, 9, 11, 13]
+    terminal_gs = [4, 7, 10, 12]
+    matrix2 = []
+    for w in waccs:
+        row = []
+        for tg in terminal_gs:
+            val, _ = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct, capex_pct,
+                                    wc_change_pct, tax_rate, w, shares, 10, tg)
+            row.append(val)
+        matrix2.append(row)
+
+    df2 = pd.DataFrame(matrix2, index=[f"{w}%" for w in waccs], columns=[f"{g}%" for g in terminal_gs])
+    st.dataframe(df2.style.applymap(style_fair).format("₹{:.2f}"))
+
+    # 3️⃣ Table: EBIT vs Terminal Growth
+    st.markdown("### 📊 Scenario 3: EBIT Margin vs Terminal Growth")
+    ebit_margins = [8, 12, 16, 20, 25]
+    tg_values = [4, 7, 10, 12]
+    matrix3 = []
+    for em in ebit_margins:
+        row = []
+        for tg in tg_values:
+            val, _ = dcf_fair_value(base_revenue, forecast_years, em, depreciation_pct, capex_pct,
+                                    wc_change_pct, tax_rate, wacc, shares, 10, tg)
+            row.append(val)
+        matrix3.append(row)
+
+    df3 = pd.DataFrame(matrix3, index=[f"{e}%" for e in ebit_margins], columns=[f"{g}%" for g in tg_values])
+    st.dataframe(df3.style.applymap(style_fair).format("₹{:.2f}"))
 
 
 # --- DATA CHECK TAB ---
