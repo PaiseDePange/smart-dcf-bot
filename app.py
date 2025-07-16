@@ -189,5 +189,5 @@ with tabs[1]:
 # [Unchanged code omitted for brevity]
 
 st.markdown("---")
-st.caption(""Made with ❤️ by Paise De Pange for Smart Investing.")
+st.caption("Made with ❤️ by Paise De Pange for Smart Investing.")
 
