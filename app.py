@@ -117,7 +117,7 @@ with tabs[0]:
         with st.expander("🚀 Revenue Growth Assumptions"):
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0, help="Expected revenue growth for years 1 and 2")
+                st.session_state["user_growth_rate_yr_1_2"] = st.number_input("Growth Y1 & Y2 (%)", value=10.0, step=0.1, format="%.1f", help="Expected revenue growth for years 1 and 2")
             with col2:
                 st.session_state["user_growth_rate_yr_3_4_5"] = st.number_input("Growth Y3 to Y5 (%)", value=10.0, help="Expected revenue growth for years 3 to 5")
             with col3:
