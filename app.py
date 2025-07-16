@@ -1,6 +1,7 @@
 # 🤖 Streamlit App for Sophisticated DCF Valuation and EPS Projection (Layout Enhanced)
 import streamlit as st
 import pandas as pd
+import openpyxl
 import numpy as np
 from collections import Counter
 
@@ -92,10 +93,10 @@ with tabs[0]:
     uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
 
     if uploaded_file and st.button("📥 Import Data"):
-        import openpyxl
         wb = openpyxl.load_workbook(uploaded_file, data_only=True)
         sheet = wb["Data Sheet"]
-        df_all = pd.DataFrame(sheet.values)
+        data = list(sheet.values)
+        df_all = pd.DataFrame(data)
         st.session_state["company_name"] = df_all.iloc[0, 1] if pd.notna(df_all.iloc[0, 1]) else "Unknown Company"
         st.session_state["annual_pl"] = extract_table(df_all, "PROFIT & LOSS",1,11)
         st.session_state["balance_sheet"] = extract_table(df_all, "BALANCE SHEET",1,11)
