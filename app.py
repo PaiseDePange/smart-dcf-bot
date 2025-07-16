@@ -102,7 +102,8 @@ with tabs[0]:
         revenue_row = df.loc["Sales"].dropna()
         tax_row = df.loc["Tax"].dropna()
         depreciation_row = df.loc["Depreciation"].dropna()
-
+        df = st.session_state["balance_sheet"].copy().set_index("Report Date")
+        share_outstanding_row = df.loc["No. of Equity Shares"].dropna()
         try:
             calculated_ebit = revenue_row[-1] - sum(df.loc[row].dropna()[-1] for row in [
                 "Raw Material Cost", "Change in Inventory", "Power and Fuel",
@@ -115,6 +116,11 @@ with tabs[0]:
             calculated_ebit = 0
             calculated_ebit_margin = 0
             calculated_tax_rate = 0
+        
+        try:
+              outstanding_shares = round(share_outstanding_row[-1]/10000000,2)
+        except:
+          
         with st.expander("🚀 Revenue Growth Assumptions"):
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -137,7 +143,7 @@ with tabs[0]:
                 st.session_state["tax_rate"] = st.number_input("Tax Rate (%) of EBIT", value = calculated_tax_rate, step=0.1, help=f"Last actual Tax rate % of EBIT :{calculated_tax_rate}%")
             with col3:
                 st.session_state["forecast_years"] = st.number_input("Forecast Period (Years)", 1, 15, 5, step=1,help="Projection time horizon for future FCF")
-                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=10.0, step=0.1, help="Total number of outstanding equity shares")
+                st.session_state["shares_outstanding"] = st.number_input("Shares Outstanding (in Cr)", value=outstanding_shares, step=0.1, help=f"Last actual total number of outstanding equity shares : {outstanding_shares} ")                       
 
 # --- DCF TAB ---
 with tabs[1]:
