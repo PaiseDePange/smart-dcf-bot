@@ -176,6 +176,10 @@ with tabs[0]:
 with tabs[1]:
     st.header("\U0001F4B0 DCF Valuation")
     if st.session_state.get("data_imported") and st.button("Calculate DCF"):
+        df = st.session_state["annual_pl"].copy().set_index("Report Date")
+        revenue_row = df.loc["Sales"].dropna()
+        base_revenue = revenue_row.values[-1]
+
         with st.expander("📋 Assumptions Used in DCF Calculation"):
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -190,10 +194,7 @@ with tabs[1]:
                 st.write(f"**WACC (%):** {st.session_state['interest_pct']}")
                 st.write(f"**Forecast Years:** {st.session_state['forecast_years']}")
                 st.write(f"**Terminal Growth Rate (%):** {st.session_state['user_growth_rate_yr_6_onwards']}")
-        df = st.session_state["annual_pl"].copy().set_index("Report Date")
-        revenue_row = df.loc["Sales"].dropna()
-        base_revenue = revenue_row.values[-1]
-
+        
         fcf_data = calculate_dcf(
             base_revenue=base_revenue,
             forecast_years=st.session_state["forecast_years"],
