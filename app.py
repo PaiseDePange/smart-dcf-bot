@@ -28,7 +28,7 @@ def format_column_headers(headers):
 
 def extract_table(df, start_label, start_row_offset, col_count=11):
     start_row = df[df.iloc[:, 0] == start_label].index[0]
-    header_row = start_row + start_row_offset
+    header_row = start_row + 2
     headers_raw = df.iloc[header_row, 0:col_count].tolist()
     headers = format_column_headers(headers_raw)
     column_names = headers
