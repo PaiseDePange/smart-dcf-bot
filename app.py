@@ -216,7 +216,7 @@ with tabs[1]:
 
         # Sensitivity Analysis
         st.subheader("📊 Sensitivity Analysis (Growth Rate ±5%)")
-        growth_range = growth_rate_3_4_5
+        growth_rate  = growth_rate_3_4_5
         growth_range = [growth_rate + delta for delta in range(-5, 6)]
         sensitivity = []
         for g in growth_range:
