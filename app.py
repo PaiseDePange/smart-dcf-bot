@@ -281,44 +281,45 @@ with tabs[1]:
         col2.metric("Equity Value (INR)", f"{equity_value:,.2f}")
         col3.metric("Fair Value/Share", f"{fair_value_per_share:,.2f}")
 
-        with st.expander("📊 Valuation Verdict Based on DCF"):
-            try:
-                df_meta = st.session_state["meta"].copy()
-                if df_meta.shape[1] == 2:
-                    df_meta.columns = ["Label", "Value"]
-                    df_meta = df_meta.set_index("Label")
-                    current_price = float(df_meta.loc["Current Price", "Value"])
-        
-                    diff_pct = ((fair_value_per_share - current_price) / current_price) * 100
-            
-                    if diff_pct > 10:
-                        st.markdown(f"""
-                        <div style='background-color:#e6ffed;border-left:5px solid #2ecc71;padding:1em;border-radius:6px'>
-                        ✅ <strong>The stock appears undervalued by {diff_pct:.1f}%</strong><br>
-                        Current Price = ₹{current_price:.2f} <br>
-                        DCF Fair Value = ₹{fair_value_per_share:.2f}
-                        </div>
-                        """, unsafe_allow_html=True)
-                    elif diff_pct < -10:
-                        st.markdown(f"""
-                        <div style='background-color:#ffe6e6;border-left:5px solid #e74c3c;padding:1em;border-radius:6px'>
-                        ❌ <strong>The stock appears overvalued by {abs(diff_pct):.1f}%</strong><br>
-                        Current Price = ₹{current_price:.2f} <br>
-                        DCF Fair Value = ₹{fair_value_per_share:.2f}
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown(f"""
-                        <div style='background-color:#f0f0f0;border-left:5px solid #7f8c8d;padding:1em;border-radius:6px'>
-                        ⚖️ <strong>The stock appears fairly valued (±10%)</strong><br>
-                        Current Price = ₹{current_price:.2f} <br>
-                        DCF Fair Value = ₹{fair_value_per_share:.2f}
-                        </div>
-                        """, unsafe_allow_html=True)
-                else:
-                    st.warning("⚠️ Could not determine verdict. META sheet should have exactly 2 columns.")
-            except Exception as e:
-                st.warning(f"⚠️ Verdict unavailable. Error: {e}")
+        with st.expander("📊 Valuation Verdict Based on DCF", expanded=True):
+  
+          try:
+              df_meta = st.session_state["meta"].copy()
+              if df_meta.shape[1] == 2:
+                  df_meta.columns = ["Label", "Value"]
+                  df_meta = df_meta.set_index("Label")
+                  current_price = float(df_meta.loc["Current Price", "Value"])
+      
+                  diff_pct = ((fair_value_per_share - current_price) / current_price) * 100
+          
+                  if diff_pct > 10:
+                      st.markdown(f"""
+                      <div style='background-color:#e6ffed;border-left:5px solid #2ecc71;padding:1em;border-radius:6px'>
+                      ✅ <strong>The stock appears undervalued by {diff_pct:.1f}%</strong><br>
+                      Current Price = ₹{current_price:.2f} <br>
+                      DCF Fair Value = ₹{fair_value_per_share:.2f}
+                      </div>
+                      """, unsafe_allow_html=True)
+                  elif diff_pct < -10:
+                      st.markdown(f"""
+                      <div style='background-color:#ffe6e6;border-left:5px solid #e74c3c;padding:1em;border-radius:6px'>
+                      ❌ <strong>The stock appears overvalued by {abs(diff_pct):.1f}%</strong><br>
+                      Current Price = ₹{current_price:.2f} <br>
+                      DCF Fair Value = ₹{fair_value_per_share:.2f}
+                      </div>
+                      """, unsafe_allow_html=True)
+                  else:
+                      st.markdown(f"""
+                      <div style='background-color:#f0f0f0;border-left:5px solid #7f8c8d;padding:1em;border-radius:6px'>
+                      ⚖️ <strong>The stock appears fairly valued (±10%)</strong><br>
+                      Current Price = ₹{current_price:.2f} <br>
+                      DCF Fair Value = ₹{fair_value_per_share:.2f}
+                      </div>
+                      """, unsafe_allow_html=True)
+              else:
+                  st.warning("⚠️ Could not determine verdict. META sheet should have exactly 2 columns.")
+          except Exception as e:
+              st.warning(f"⚠️ Verdict unavailable. Error: {e}")
   
 
 # --- DATA CHECK TAB ---
