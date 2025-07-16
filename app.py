@@ -108,7 +108,7 @@ with tabs[0]:
                 "Other Mfr. Exp", "Employee Cost", "Selling and admin", "Other Expenses"] if row in df.index)
             latest_revenue = revenue_row[-1]
             calculated_ebit_margin = round((calculated_ebit / latest_revenue) * 100, 2)
-            calculated_tax_rate = tax_row[-1]/calculated_ebit
+            calculated_tax_rate = round(tax_row[-1]/calculated_ebit)*100,2)
         
         except:
             calculated_ebit = 0
@@ -189,4 +189,5 @@ with tabs[1]:
 # [Unchanged code omitted for brevity]
 
 st.markdown("---")
-st.caption("Made with ❤️ by Paise De Pange for Smart Investing.")
+st.caption(""Made with ❤️ by Paise De Pange for Smart Investing.")
+
