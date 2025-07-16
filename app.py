@@ -84,8 +84,40 @@ def calculate_dcf(base_revenue, forecast_years, ebit_margin, depreciation_pct, c
 
     return fcf_data
 
+
+
+def calculate_terminal_value(fcf, g, r, n):
+    tv = (fcf * (1 + g / 100)) / ((r / 100) - (g / 100))
+    return tv / ((1 + r / 100) ** n), tv
+
+
+def dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct, capex_pct, wc_change_pct,
+            tax_rate, interest_pct, shares, growth_1_5, growth_6, terminal_growth):
+            revenue = base_revenue    
+            total_pv_fcf = 0
+            for year in range(1, forecast_years + 1):
+                revenue *= (1 + growth_1_5 / 100)
+                ebit = revenue * (ebit_margin / 100)
+                tax = ebit * (tax_rate / 100)
+                dep = revenue * (depreciation_pct / 100)
+                capex = revenue * (capex_pct / 100)
+                wc = revenue * (wc_change_pct / 100)
+                fcf = ebit - tax + dep - capex - wc
+                pv_fcf = fcf / ((1 + interest_pct / 100) ** year)
+                total_pv_fcf += pv_fcf
+        
+            final_fcf = fcf
+            pv_terminal, terminal_val = calculate_terminal_value(final_fcf, terminal_growth, interest_pct, forecast_years)
+            ev = total_pv_fcf + pv_terminal    
+            fv_per_share = ev / shares if shares else 0
+            terminal_weight = terminal_val / ev * 100 if ev else 0
+            return fv_per_share, terminal_weight
+
+
+
 # Tabs for entire app
 tabs = st.tabs(["\U0001F4E5 Inputs", "\U0001F4B0 DCF Valuation", "\U0001F4C8 EPS Projection", "\U0001F5FE Data Checks"])
+
 
 # --- INPUT TAB ---
 with tabs[0]:
@@ -242,9 +274,9 @@ with tabs[1]:
 
         df_fcf = pd.DataFrame(fcf_data, columns=["Year", "Revenue", "EBIT", "Tax", "Net Operating PAT", "Depreciation", "CapEx", "Change in WC", "Free Cash Flow", "PV of FCF"])
         st.dataframe(df_fcf.style.format({
-    "Revenue": "{:.2f}", "EBIT": "{:.2f}", "Tax": "{:.2f}", "Net Operating PAT": "{:.2f}", "Depreciation": "{:.2f}",
-    "CapEx": "{:.2f}", "Change in WC": "{:.2f}", "Free Cash Flow": "{:.2f}", "PV of FCF": "{:.2f}"
-}))
+          "Revenue": "{:.2f}", "EBIT": "{:.2f}", "Tax": "{:.2f}", "Net Operating PAT": "{:.2f}", "Depreciation": "{:.2f}",
+          "CapEx": "{:.2f}", "Change in WC": "{:.2f}", "Free Cash Flow": "{:.2f}", "PV of FCF": "{:.2f}"
+        }))
 
         final_fcf = fcf_data[-1][-2]
         terminal_growth = st.session_state["user_growth_rate_yr_6_onwards"]
@@ -282,102 +314,81 @@ with tabs[1]:
         col3.metric("Fair Value/Share", f"{fair_value_per_share:,.2f}")
 
         with st.expander("📊 Valuation Verdict Based on DCF", expanded=True):
-  
           try:
-              df_meta = st.session_state["meta"].copy()
-              if df_meta.shape[1] == 2:
-                  df_meta.columns = ["Label", "Value"]
-                  df_meta = df_meta.set_index("Label")
-                  current_price = float(df_meta.loc["Current Price", "Value"])
-      
-                  diff_pct = ((fair_value_per_share - current_price) / current_price) * 100
-          
-                  if diff_pct > 10:
-                      st.markdown(f"""
-                      <div style='background-color:#e6ffed;border-left:5px solid #2ecc71;padding:1em;border-radius:6px'>
-                      ✅ <strong>The stock appears undervalued by {diff_pct:.1f}%</strong><br>
-                      Current Price = ₹{current_price:.2f} <br>
-                      DCF Fair Value = ₹{fair_value_per_share:.2f}
-                      </div>
-                      """, unsafe_allow_html=True)
-                  elif diff_pct < -10:
-                      st.markdown(f"""
-                      <div style='background-color:#ffe6e6;border-left:5px solid #e74c3c;padding:1em;border-radius:6px'>
-                      ❌ <strong>The stock appears overvalued by {abs(diff_pct):.1f}%</strong><br>
-                      Current Price = ₹{current_price:.2f} <br>
-                      DCF Fair Value = ₹{fair_value_per_share:.2f}
-                      </div>
-                      """, unsafe_allow_html=True)
-                  else:
-                      st.markdown(f"""
-                      <div style='background-color:#f0f0f0;border-left:5px solid #7f8c8d;padding:1em;border-radius:6px'>
-                      ⚖️ <strong>The stock appears fairly valued (±10%)</strong><br>
-                      Current Price = ₹{current_price:.2f} <br>
-                      DCF Fair Value = ₹{fair_value_per_share:.2f}
-                      </div>
-                      """, unsafe_allow_html=True)
-              else:
-                  st.warning("⚠️ Could not determine verdict. META sheet should have exactly 2 columns.")
+            df_meta = st.session_state["meta"].copy()
+            if df_meta.shape[1] == 2:
+                df_meta.columns = ["Label", "Value"]
+                df_meta = df_meta.set_index("Label")
+                current_price = float(df_meta.loc["Current Price", "Value"])
+    
+                diff_pct = ((fair_value_per_share - current_price) / current_price) * 100
+        
+                if diff_pct > 10:
+                    st.markdown(f"""
+                    <div style='background-color:#e6ffed;border-left:5px solid #2ecc71;padding:1em;border-radius:6px'>
+                    ✅ <strong>The stock appears undervalued by {diff_pct:.1f}%</strong><br>
+                    Current Price = ₹{current_price:.2f} <br>
+                    DCF Fair Value = ₹{fair_value_per_share:.2f}
+                    </div>
+                    """, unsafe_allow_html=True)
+                elif diff_pct < -10:
+                    st.markdown(f"""
+                    <div style='background-color:#ffe6e6;border-left:5px solid #e74c3c;padding:1em;border-radius:6px'>
+                    ❌ <strong>The stock appears overvalued by {abs(diff_pct):.1f}%</strong><br>
+                    Current Price = ₹{current_price:.2f} <br>
+                    DCF Fair Value = ₹{fair_value_per_share:.2f}
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div style='background-color:#f0f0f0;border-left:5px solid #7f8c8d;padding:1em;border-radius:6px'>
+                    ⚖️ <strong>The stock appears fairly valued (±10%)</strong><br>
+                    Current Price = ₹{current_price:.2f} <br>
+                    DCF Fair Value = ₹{fair_value_per_share:.2f}
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.warning("⚠️ Could not determine verdict. META sheet should have exactly 2 columns.")
           except Exception as e:
               st.warning(f"⚠️ Verdict unavailable. Error: {e}")
           
-        def calculate_terminal_value(fcf, g, r, n):
-            tv = (fcf * (1 + g / 100)) / ((r / 100) - (g / 100))
-            return tv / ((1 + r / 100) ** n), tv
-            
-        def dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct, capex_pct, wc_change_pct,
-            tax_rate, interest_pct, shares, growth_1_5, growth_6, terminal_growth):
-            revenue = base_revenue    
-            total_pv_fcf = 0
-            for year in range(1, forecast_years + 1):
-                revenue *= (1 + growth_1_5 / 100)
-                ebit = revenue * (ebit_margin / 100)
-                tax = ebit * (tax_rate / 100)
-                dep = revenue * (depreciation_pct / 100)
-                capex = revenue * (capex_pct / 100)
-                wc = revenue * (wc_change_pct / 100)
-                fcf = ebit - tax + dep - capex - wc
-                pv_fcf = fcf / ((1 + interest_pct / 100) ** year)
-                total_pv_fcf += pv_fcf
+
         
-            final_fcf = fcf
-            pv_terminal, terminal_val = calculate_terminal_value(final_fcf, terminal_growth, interest_pct, forecast_years)
-            ev = total_pv_fcf + pv_terminal    
-            fv_per_share = ev / shares if shares else 0
-            terminal_weight = terminal_val / ev * 100 if ev else 0
-            return fv_per_share, terminal_weight
+        
 
 
-        # ---- Sensitivity Tables ----
-        st.subheader("📈 Sensitivity Analysis")
-    
-        base_revenue = revenue_row.values[-1]
-        forecast_years = st.session_state["forecast_years"]
-        shares = st.session_state["shares_outstanding"]
-        tax_rate = st.session_state["tax_rate"]
-        depreciation_pct = st.session_state["depreciation_pct"]
-        capex_pct = st.session_state["capex_pct"]
-        wc_change_pct = st.session_state["wc_change_pct"]
-        ebit_margin = st.session_state["ebit_margin"]
-        terminal_growth = st.session_state["user_growth_rate_yr_6_onwards"]
-        wacc = st.session_state["interest_pct"]
-    
-        def style_fair(val):
-            diff_pct = ((val - base_value) / base_value) * 100
-            if diff_pct > 10:
-                return 'background-color:#e6ffed'  # green
-            elif diff_pct < -10:
-                return 'background-color:#ffe6e6'  # red
-            else:
-                return 'background-color:#f0f0f0'  # gray
-    
-        # 1️⃣ Table: Fair Value vs 5-Year Growth
-        st.markdown("### 📊 Scenario 1: 5-Year Revenue Growth Rate Sensitivity")
+    # ---- Sensitivity Tables ----
+    st.subheader("📈 Sensitivity Analysis")
+
+    base_revenue = revenue_row.values[-1]
+    forecast_years = st.session_state["forecast_years"]
+    shares = st.session_state["shares_outstanding"]
+    tax_rate = st.session_state["tax_rate"]
+    depreciation_pct = st.session_state["depreciation_pct"]
+    capex_pct = st.session_state["capex_pct"]
+    wc_change_pct = st.session_state["wc_change_pct"]
+    ebit_margin = st.session_state["ebit_margin"]
+    terminal_growth = st.session_state["user_growth_rate_yr_6_onwards"]
+    wacc = st.session_state["interest_pct"]
+
+    def style_fair(val):
+        diff_pct = ((val - base_value) / base_value) * 100
+        if diff_pct > 10:
+            return 'background-color:#e6ffed'  # green
+        elif diff_pct < -10:
+            return 'background-color:#ffe6e6'  # red
+        else:
+            return 'background-color:#f0f0f0'  # gray
+
+    # 1️⃣ Table: Fair Value vs 5-Year Growth
+    st.markdown("### 📊 Scenario 1: 5-Year Revenue Growth Rate Sensitivity")
         growth_scenarios = [5, 10, 14, 16, 25]
         data1 = []
+        base_growth = 10  # or any value in growth_scenarios you want as baseline
         base_value, base_tv_weight = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
-                                    capex_pct, wc_change_pct, tax_rate, wacc, shares, 10, terminal_growth)
-    
+                                capex_pct, wc_change_pct, tax_rate, wacc, shares, base_growth, terminal_growth)
+
+
         for g in growth_scenarios:
             val, tv_pct = dcf_fair_value(base_revenue, forecast_years, ebit_margin, depreciation_pct,
                                     capex_pct, wc_change_pct, tax_rate, wacc, shares, g, terminal_growth)
@@ -385,7 +396,7 @@ with tabs[1]:
     
         df1 = pd.DataFrame(data1)
         st.dataframe(df1.style.applymap(style_fair, subset=["Fair Value (₹)"]).format({"Fair Value (₹)": "₹{:.2f}"}))
-    
+
         # 2️⃣ Table: WACC vs Terminal Growth
         st.markdown("### 📊 Scenario 2: WACC vs Terminal Growth")
         waccs = [7, 9, 11, 13]
@@ -398,7 +409,7 @@ with tabs[1]:
                                         wc_change_pct, tax_rate, w, shares, 10, tg)
                 row.append(val)
             matrix2.append(row)
-    
+
         df2 = pd.DataFrame(matrix2, index=[f"{w}%" for w in waccs], columns=[f"{g}%" for g in terminal_gs])
         st.dataframe(df2.style.applymap(style_fair).format("₹{:.2f}"))
     
